@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GridInsight API 测试</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>GridInsight 指标查询API测试</h1>
+    
+    <h2>1. 获取所有指标列表</h2>
+    <button onclick="listIndicators()">获取指标列表</button>
+    <div id="listResult"></div>
+    
+    <h2>2. 查询单个指标</h2>
+    <input type="text" id="indicatorId" placeholder="输入指标标识符" style="width: 500px;" 
+           value="中压拓扑.配变统计.配变总数">
+    <button onclick="queryIndicator()">查询指标</button>
+    <div id="queryResult"></div>
+    
+    <h2>3. 批量查询</h2>
+    <textarea id="batchIds" placeholder="输入多个指标标识符，每行一个" style="width: 500px; height: 100px;">
+中压拓扑.配变统计.配变总数
+中压拓扑.拓扑不一致.配变挂接馈线、具体分段位置与现场实际运行不一致数量
+    </textarea>
+    <button onclick="batchQuery()">批量查询</button>
+    <div id="batchResult"></div>
+
+    <script>
+        const baseUrl = 'http://localhost:8080/api/indicators';
+        
+        async function listIndicators() {
+            try {
+                const response = await fetch(baseUrl + '/list');
+                const data = await response.json();
+                document.getElementById('listResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('listResult').innerHTML = '<p style="color: red;">错误: ' + error.message + '</p>';
+            }
+        }
+        
+        async function queryIndicator() {
+            const identifier = document.getElementById('indicatorId').value;
+            try {
+                const response = await fetch(baseUrl + '/query?fullIdentifier=' + encodeURIComponent(identifier));
+                const data = await response.json();
+                document.getElementById('queryResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('queryResult').innerHTML = '<p style="color: red;">错误: ' + error.message + '</p>';
+            }
+        }
+        
+        async function batchQuery() {
+            const identifiers = document.getElementById('batchIds').value.split('\n').filter(id => id.trim());
+            try {
+                const response = await fetch(baseUrl + '/batch-query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(identifiers)
+                });
+                const data = await response.json();
+                document.getElementById('batchResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('batchResult').innerHTML = '<p style="color: red;">错误: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>
