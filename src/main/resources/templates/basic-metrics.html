@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基础指标管理 - GridInsight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .metric-card {
+            transition: transform 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+        .data-source-badge {
+            font-size: 0.75em;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/admin/metrics">
+                <i class="bi bi-speedometer2"></i> GridInsight 指标管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/metrics">首页</a>
+                <a class="nav-link active" href="/admin/metrics/basic">基础指标</a>
+                <a class="nav-link" href="/admin/metrics/derived">派生指标</a>
+                <a class="nav-link" href="/api/metrics">API文档</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="container mt-4">
+        <!-- 页面标题和操作按钮 -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1>
+                    <i class="bi bi-graph-up text-primary"></i> 基础指标管理
+                </h1>
+                <p class="text-muted">管理从外部数据源获取的基础指标定义</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="/admin/metrics/basic/add" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> 添加基础指标
+                </a>
+            </div>
+        </div>
+
+        <!-- 消息提示 -->
+        <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i>
+            <span th:text="${param.success[0]}">操作成功</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span th:text="${param.error[0]}">操作失败</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- 指标列表 -->
+        <div class="row" th:if="${basicMetrics != null and !basicMetrics.isEmpty()}">
+            <div th:each="entry : ${basicMetrics}" class="col-lg-6 col-xl-4 mb-4">
+                <div class="card metric-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="card-title mb-0" th:text="${entry.value.name}">指标名称</h6>
+                        <span class="badge bg-primary data-source-badge" 
+                              th:text="${entry.value.dataSource.sourceType}">HTTP_API</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <small class="text-muted">标识符:</small><br>
+                            <code th:text="${entry.key}">分类.子分类.指标名称</code>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">分类:</small><br>
+                            <span th:text="${entry.value.category}">分类</span> / 
+                            <span th:text="${entry.value.subCategory}">子分类</span>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">单位:</small><br>
+                            <span class="badge bg-secondary" th:text="${entry.value.unit}">个</span>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">描述:</small><br>
+                            <span th:text="${entry.value.description}">指标描述</span>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">数据源:</small><br>
+                            <div class="small">
+                                <div><strong>名称:</strong> <span th:text="${entry.value.dataSource.sourceName}">数据源名称</span></div>
+                                <div><strong>地址:</strong> <span class="text-break" th:text="${entry.value.dataSource.sourceAddress}">数据源地址</span></div>
+                                <div><strong>刷新间隔:</strong> <span th:text="${entry.value.dataSource.refreshInterval}">300</span>秒</div>
+                                <div><strong>状态:</strong> 
+                                    <span class="badge" th:classappend="${entry.value.dataSource.enabled ? 'bg-success' : 'bg-danger'}"
+                                          th:text="${entry.value.dataSource.enabled ? '启用' : '禁用'}">启用</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100" role="group">
+                            <a th:href="@{'/admin/metrics/basic/edit/' + ${entry.key}}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil"></i> 编辑
+                            </a>
+                            <button type="button" class="btn btn-outline-info btn-sm" 
+                                    th:data-identifier="${entry.key}"
+                                    onclick="showMetricDetails(this.dataset.identifier)">
+                                <i class="bi bi-eye"></i> 详情
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                    th:data-identifier="${entry.key}"
+                                    onclick="deleteMetric(this.dataset.identifier)">
+                                <i class="bi bi-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div th:if="${basicMetrics == null or basicMetrics.isEmpty()}" class="text-center py-5">
+            <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
+            <h3 class="text-muted mt-3">暂无基础指标</h3>
+            <p class="text-muted">点击上方按钮添加第一个基础指标</p>
+            <a href="/admin/metrics/basic/add" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> 添加基础指标
+            </a>
+        </div>
+    </div>
+
+    <!-- 指标详情模态框 -->
+    <div class="modal fade" id="metricDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">指标详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="metricDetailsContent">
+                    <!-- 动态加载内容 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">确认删除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>确定要删除这个指标吗？此操作不可撤销。</p>
+                    <div id="deleteMetricInfo"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">确认删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 显示指标详情
+        function showMetricDetails(identifier) {
+            fetch('/admin/metrics/api/' + encodeURIComponent(identifier))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const metric = data.metric;
+                        let content = `
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>基本信息</h6>
+                                    <table class="table table-sm">
+                                        <tr><td><strong>名称:</strong></td><td>${metric.name}</td></tr>
+                                        <tr><td><strong>标识符:</strong></td><td><code>${identifier}</code></td></tr>
+                                        <tr><td><strong>分类:</strong></td><td>${metric.category}</td></tr>
+                                        <tr><td><strong>子分类:</strong></td><td>${metric.subCategory}</td></tr>
+                                        <tr><td><strong>单位:</strong></td><td><span class="badge bg-secondary">${metric.unit}</span></td></tr>
+                                        <tr><td><strong>类型:</strong></td><td><span class="badge bg-primary">${metric.metricType}</span></td></tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>数据源信息</h6>
+                                    <table class="table table-sm">
+                                        <tr><td><strong>类型:</strong></td><td><span class="badge bg-info">${metric.dataSource.sourceType}</span></td></tr>
+                                        <tr><td><strong>名称:</strong></td><td>${metric.dataSource.sourceName}</td></tr>
+                                        <tr><td><strong>地址:</strong></td><td><code>${metric.dataSource.sourceAddress}</code></td></tr>
+                                        <tr><td><strong>刷新间隔:</strong></td><td>${metric.dataSource.refreshInterval}秒</td></tr>
+                                        <tr><td><strong>状态:</strong></td><td><span class="badge ${metric.dataSource.enabled ? 'bg-success' : 'bg-danger'}">${metric.dataSource.enabled ? '启用' : '禁用'}</span></td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>描述</h6>
+                                    <p>${metric.description}</p>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('metricDetailsContent').innerHTML = content;
+                        new bootstrap.Modal(document.getElementById('metricDetailsModal')).show();
+                    } else {
+                        alert('获取指标详情失败: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('获取指标详情失败');
+                });
+        }
+
+        // 删除指标
+        function deleteMetric(identifier) {
+            document.getElementById('deleteMetricInfo').innerHTML = `
+                <p><strong>指标标识符:</strong> <code>${identifier}</code></p>
+            `;
+            
+            document.getElementById('confirmDeleteBtn').onclick = function() {
+                fetch('/admin/metrics/delete/' + encodeURIComponent(identifier), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('删除失败: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('删除失败');
+                });
+            };
+            
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        }
+    </script>
+</body>
+</html>

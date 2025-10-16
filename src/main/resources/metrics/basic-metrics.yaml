@@ -1,0 +1,93 @@
+# 基础指标定义配置
+# 格式：指标标识符 -> 指标配置
+basicMetrics:
+  "中压拓扑.配变统计.配变总数":
+    name: "配变总数"
+    category: "中压拓扑"
+    subCategory: "配变统计"
+    unit: "个"
+    description: "中压配变总数统计"
+    dataSource:
+      sourceType: "HTTP_API"
+      sourceAddress: "http://api.example.com/transformer/count"
+      sourceName: "配变统计API"
+      refreshInterval: 300
+      enabled: true
+
+  "中压拓扑.拓扑不一致.配变挂接馈线不一致数量":
+    name: "配变挂接馈线不一致数量"
+    category: "中压拓扑"
+    subCategory: "拓扑不一致"
+    unit: "个"
+    description: "配变挂接馈线不一致的数量"
+    dataSource:
+      sourceType: "HTTP_API"
+      sourceAddress: "http://api.example.com/topology/inconsistency"
+      sourceName: "拓扑不一致API"
+      refreshInterval: 300
+      enabled: true
+
+  "低压用户关系.低压用户统计.全省低压用户总数":
+    name: "全省低压用户总数"
+    category: "低压用户关系"
+    subCategory: "低压用户统计"
+    unit: "户"
+    description: "全省低压用户总数统计"
+    dataSource:
+      sourceType: "HTTP_API"
+      sourceAddress: "http://api.example.com/user/count"
+      sourceName: "用户统计API"
+      refreshInterval: 600
+      enabled: true
+
+  "低压用户关系.变户关系错误.变户关系不正确的低压用户数":
+    name: "变户关系不正确的低压用户数"
+    category: "低压用户关系"
+    subCategory: "变户关系错误"
+    unit: "户"
+    description: "变户关系不正确的低压用户数量"
+    dataSource:
+      sourceType: "HTTP_API"
+      sourceAddress: "http://api.example.com/relation/error"
+      sourceName: "关系错误API"
+      refreshInterval: 600
+      enabled: true
+
+  "测试.MQTT.实时功率":
+    name: "实时功率"
+    category: "测试"
+    subCategory: "MQTT"
+    unit: "kW"
+    description: "通过MQTT获取的实时功率数据"
+    dataSource:
+      sourceType: "MQTT"
+      sourceAddress: "mqtt://broker.example.com:1883/topic/power"
+      sourceName: "功率MQTT主题"
+      refreshInterval: 60
+      enabled: true
+
+  "测试.数据库.历史负荷":
+    name: "历史负荷"
+    category: "测试"
+    subCategory: "数据库"
+    unit: "MW"
+    description: "从数据库获取的历史负荷数据"
+    dataSource:
+      sourceType: "DATABASE"
+      sourceAddress: "jdbc:mysql://db.example.com:3306/power_db"
+      sourceName: "负荷数据库"
+      refreshInterval: 3600
+      enabled: true
+
+  "测试.文件.配置文件":
+    name: "配置文件"
+    category: "测试"
+    subCategory: "文件"
+    unit: "个"
+    description: "从文件读取的配置信息"
+    dataSource:
+      sourceType: "FILE"
+      sourceAddress: "/data/config/metrics.json"
+      sourceName: "配置文件"
+      refreshInterval: 1800
+      enabled: true

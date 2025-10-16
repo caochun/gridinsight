@@ -1,0 +1,92 @@
+# 派生指标定义配置
+# 格式：指标标识符 -> 指标配置
+derivedMetrics:
+  "中压拓扑.拓扑关系准确率.拓扑关系准确率":
+    name: "拓扑关系准确率"
+    category: "中压拓扑"
+    subCategory: "拓扑关系准确率"
+    unit: "%"
+    description: "中压拓扑关系准确率计算"
+    formula: "(1 - 中压拓扑.拓扑不一致.配变挂接馈线不一致数量 / 中压拓扑.配变统计.配变总数) * 100"
+    updateStrategy: "DEPENDENCY_DRIVEN"
+    dependencies:
+      - "中压拓扑.配变统计.配变总数"
+      - "中压拓扑.拓扑不一致.配变挂接馈线不一致数量"
+
+  "低压用户关系.变户关系准确率.变户关系准确率":
+    name: "变户关系准确率"
+    category: "低压用户关系"
+    subCategory: "变户关系准确率"
+    unit: "%"
+    description: "变户关系准确率计算"
+    formula: "(1 - 低压用户关系.变户关系错误.变户关系不正确的低压用户数 / 低压用户关系.低压用户统计.全省低压用户总数) * 100"
+    updateStrategy: "DEPENDENCY_DRIVEN"
+    dependencies:
+      - "低压用户关系.低压用户统计.全省低压用户总数"
+      - "低压用户关系.变户关系错误.变户关系不正确的低压用户数"
+
+  "综合质量.综合质量指标.综合质量指标":
+    name: "综合质量指标"
+    category: "综合质量"
+    subCategory: "综合质量指标"
+    unit: "%"
+    description: "综合质量指标计算"
+    formula: "sqrt(中压拓扑.拓扑关系准确率.拓扑关系准确率 * 低压用户关系.变户关系准确率.变户关系准确率)"
+    updateStrategy: "SCHEDULED"
+    calculationInterval: 900
+    dependencies:
+      - "中压拓扑.拓扑关系准确率.拓扑关系准确率"
+      - "低压用户关系.变户关系准确率.变户关系准确率"
+
+  "测试.计算.平均值":
+    name: "平均值"
+    category: "测试"
+    subCategory: "计算"
+    unit: "个"
+    description: "计算两个指标的平均值"
+    formula: "(测试.MQTT.实时功率 + 测试.数据库.历史负荷) / 2"
+    dependencies:
+      - "测试.MQTT.实时功率"
+      - "测试.数据库.历史负荷"
+
+  "测试.计算.最大值":
+    name: "最大值"
+    category: "测试"
+    subCategory: "计算"
+    unit: "个"
+    description: "计算两个指标的最大值"
+    formula: "max(测试.MQTT.实时功率, 测试.数据库.历史负荷)"
+    dependencies:
+      - "测试.MQTT.实时功率"
+      - "测试.数据库.历史负荷"
+
+  "测试.计算.最小值":
+    name: "最小值"
+    category: "测试"
+    subCategory: "计算"
+    unit: "个"
+    description: "计算两个指标的最小值"
+    formula: "min(测试.MQTT.实时功率, 测试.数据库.历史负荷)"
+    dependencies:
+      - "测试.MQTT.实时功率"
+      - "测试.数据库.历史负荷"
+
+  "测试.计算.平方根":
+    name: "平方根"
+    category: "测试"
+    subCategory: "计算"
+    unit: "个"
+    description: "计算指标的平方根"
+    formula: "sqrt(测试.MQTT.实时功率)"
+    dependencies:
+      - "测试.MQTT.实时功率"
+
+  "测试.计算.绝对值":
+    name: "绝对值"
+    category: "测试"
+    subCategory: "计算"
+    unit: "个"
+    description: "计算指标的绝对值"
+    formula: "abs(-测试.MQTT.实时功率)"
+    dependencies:
+      - "测试.MQTT.实时功率"

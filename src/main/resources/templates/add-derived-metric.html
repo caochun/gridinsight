@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加派生指标 - GridInsight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+        .formula-editor {
+            font-family: 'Courier New', monospace;
+            min-height: 120px;
+        }
+        .dependency-select {
+            min-height: 120px;
+        }
+        .formula-help {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 0.25rem;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/admin/metrics">
+                <i class="bi bi-speedometer2"></i> GridInsight 指标管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/metrics">首页</a>
+                <a class="nav-link" href="/admin/metrics/basic">基础指标</a>
+                <a class="nav-link active" href="/admin/metrics/derived">派生指标</a>
+                <a class="nav-link" href="/api/metrics">API文档</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="container mt-4">
+        <!-- 页面标题 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1>
+                    <i class="bi bi-plus-circle text-success"></i> 添加派生指标
+                </h1>
+                <p class="text-muted">创建基于公式计算的派生指标定义</p>
+            </div>
+        </div>
+
+        <!-- 消息提示 -->
+        <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span th:text="${param.error[0]}">操作失败</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- 表单 -->
+        <form th:action="@{/admin/metrics/derived/save}" th:object="${metric}" method="post">
+            <!-- 基本信息 -->
+            <div class="form-section">
+                <h4 class="mb-3">
+                    <i class="bi bi-info-circle"></i> 基本信息
+                </h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="identifier" class="form-label required-field">指标标识符</label>
+                            <input type="text" class="form-control" id="identifier" th:field="*{identifier}" 
+                                   placeholder="格式: 分类.子分类.指标名称" required>
+                            <div class="form-text">格式: 分类.子分类.指标名称，例如: 综合质量.综合质量指标.综合质量指标</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="name" class="form-label required-field">指标名称</label>
+                            <input type="text" class="form-control" id="name" th:field="*{name}" 
+                                   placeholder="输入指标名称" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="category" class="form-label required-field">分类</label>
+                            <input type="text" class="form-control" id="category" th:field="*{category}" 
+                                   placeholder="输入分类" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="subCategory" class="form-label required-field">子分类</label>
+                            <input type="text" class="form-control" id="subCategory" th:field="*{subCategory}" 
+                                   placeholder="输入子分类" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="unit" class="form-label required-field">单位</label>
+                            <select class="form-select" id="unit" th:field="*{unit}" required>
+                                <option value="">选择单位</option>
+                                <option value="%">%</option>
+                                <option value="个">个</option>
+                                <option value="户">户</option>
+                                <option value="kW">kW</option>
+                                <option value="MW">MW</option>
+                                <option value="kV">kV</option>
+                                <option value="A">A</option>
+                                <option value="V">V</option>
+                                <option value="Hz">Hz</option>
+                                <option value="次">次</option>
+                                <option value="分钟">分钟</option>
+                                <option value="小时">小时</option>
+                                <option value="天">天</option>
+                                <option value="月">月</option>
+                                <option value="年">年</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">描述</label>
+                    <textarea class="form-control" id="description" th:field="*{description}" 
+                              rows="3" placeholder="输入指标描述（可选）"></textarea>
+                </div>
+            </div>
+
+            <!-- 公式配置 -->
+            <div class="form-section">
+                <h4 class="mb-3">
+                    <i class="bi bi-calculator"></i> 公式配置
+                </h4>
+                <div class="mb-3">
+                    <label for="formula" class="form-label required-field">计算公式</label>
+                    <textarea class="form-control formula-editor" id="formula" th:field="*{formula}" 
+                              placeholder="输入计算公式，使用指标标识符引用其他指标" required></textarea>
+                    <div class="form-text">
+                        支持四则运算、函数、括号。使用指标标识符引用其他指标，例如: (1 - 中压拓扑.拓扑不一致.配变挂接馈线不一致数量 / 中压拓扑.配变统计.配变总数) * 100
+                    </div>
+                </div>
+                
+                <!-- 公式帮助 -->
+                <div class="formula-help mb-3">
+                    <h6><i class="bi bi-lightbulb"></i> 公式语法帮助</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>运算符:</strong>
+                            <ul class="small mb-2">
+                                <li><code>+</code> 加法</li>
+                                <li><code>-</code> 减法</li>
+                                <li><code>*</code> 乘法</li>
+                                <li><code>/</code> 除法</li>
+                                <li><code>^</code> 幂运算</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>函数:</strong>
+                            <ul class="small mb-2">
+                                <li><code>sqrt(x)</code> 平方根</li>
+                                <li><code>abs(x)</code> 绝对值</li>
+                                <li><code>max(x,y)</code> 最大值</li>
+                                <li><code>min(x,y)</code> 最小值</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>示例公式:</strong>
+                            <ul class="small mb-0">
+                                <li><code>中压拓扑.配变统计.配变总数 + 低压用户关系.低压用户统计.全省低压用户总数</code></li>
+                                <li><code>(1 - 中压拓扑.拓扑不一致.配变挂接馈线不一致数量 / 中压拓扑.配变统计.配变总数) * 100</code></li>
+                                <li><code>sqrt(中压拓扑.拓扑关系准确率.拓扑关系准确率 * 低压用户关系.变户关系准确率.变户关系准确率)</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 更新策略配置 -->
+            <div class="form-section">
+                <h4 class="mb-3">
+                    <i class="bi bi-clock-history"></i> 更新策略
+                </h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="updateStrategy" class="form-label required-field">更新策略</label>
+                            <select class="form-select" id="updateStrategy" name="updateStrategy" required>
+                                <option value="REALTIME">REALTIME</option>
+                                <option value="DEPENDENCY_DRIVEN">DEPENDENCY_DRIVEN</option>
+                                <option value="SCHEDULED">SCHEDULED</option>
+                            </select>
+                            <div class="form-text">SCHEDULED时将按照固定间隔预计算。</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="calculationInterval" class="form-label">计算间隔(秒)</label>
+                            <input type="number" class="form-control" id="calculationInterval" name="calculationInterval" min="1" placeholder="例如: 300">
+                            <div class="form-text">仅当更新策略为SCHEDULED时生效。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 依赖指标配置 -->
+            <div class="form-section">
+                <h4 class="mb-3">
+                    <i class="bi bi-diagram-3"></i> 依赖指标配置
+                </h4>
+                <div class="mb-3">
+                    <label for="dependencies" class="form-label">选择依赖指标</label>
+                    <select class="form-select dependency-select" id="dependencies" th:field="*{dependencies}" 
+                            multiple size="8">
+                        <option th:each="metric : ${availableMetrics}" 
+                                th:value="${metric.key}" 
+                                th:text="${metric.key + ' - ' + metric.value.name}">指标选项</option>
+                    </select>
+                    <div class="form-text">
+                        按住Ctrl键可以选择多个依赖指标。这些指标将在公式中被引用。
+                    </div>
+                </div>
+                
+                <!-- 依赖指标预览 -->
+                <div id="dependencyPreview" class="mt-3" style="display: none;">
+                    <h6>已选择的依赖指标:</h6>
+                    <div id="selectedDependencies"></div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between">
+                        <a href="/admin/metrics/derived" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                        <div>
+                            <button type="button" class="btn btn-outline-info btn-lg me-2" onclick="previewMetric()">
+                                <i class="bi bi-eye"></i> 预览
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-lg me-2" onclick="validateFormula()">
+                                <i class="bi bi-check-circle"></i> 验证公式
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> 保存指标
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 预览模态框 -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">派生指标预览</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="previewContent">
+                    <!-- 动态加载预览内容 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 更新策略联动
+        function syncStrategyUI() {
+            const strategy = document.getElementById('updateStrategy').value;
+            const intervalInput = document.getElementById('calculationInterval');
+            if (strategy === 'SCHEDULED') {
+                intervalInput.disabled = false;
+                intervalInput.required = true;
+            } else {
+                intervalInput.disabled = true;
+                intervalInput.required = false;
+                intervalInput.value = '';
+            }
+        }
+        document.getElementById('updateStrategy').addEventListener('change', syncStrategyUI);
+        document.addEventListener('DOMContentLoaded', syncStrategyUI);
+
+        // 更新依赖指标预览
+        function updateDependencyPreview() {
+            const select = document.getElementById('dependencies');
+            const selectedOptions = Array.from(select.selectedOptions);
+            const preview = document.getElementById('dependencyPreview');
+            const previewContent = document.getElementById('selectedDependencies');
+            
+            if (selectedOptions.length > 0) {
+                let html = '';
+                selectedOptions.forEach(option => {
+                    html += `<span class="badge bg-info me-1 mb-1">${option.value}</span>`;
+                });
+                previewContent.innerHTML = html;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // 添加依赖指标到公式
+        function addMetricToFormula(metricIdentifier) {
+            const formula = document.getElementById('formula');
+            const currentValue = formula.value;
+            const cursorPos = formula.selectionStart;
+            
+            const newValue = currentValue.slice(0, cursorPos) + metricIdentifier + currentValue.slice(cursorPos);
+            formula.value = newValue;
+            
+            // 设置光标位置
+            formula.focus();
+            formula.setSelectionRange(cursorPos + metricIdentifier.length, cursorPos + metricIdentifier.length);
+        }
+
+        // 预览指标
+        function previewMetric() {
+            const form = document.querySelector('form');
+            const formData = new FormData(form);
+            
+            const selectedDependencies = Array.from(document.getElementById('dependencies').selectedOptions)
+                .map(option => option.value);
+            
+            let previewContent = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>基本信息</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>标识符:</strong></td><td><code>${formData.get('identifier')}</code></td></tr>
+                            <tr><td><strong>名称:</strong></td><td>${formData.get('name')}</td></tr>
+                            <tr><td><strong>分类:</strong></td><td>${formData.get('category')}</td></tr>
+                            <tr><td><strong>子分类:</strong></td><td>${formData.get('subCategory')}</td></tr>
+                            <tr><td><strong>单位:</strong></td><td><span class="badge bg-secondary">${formData.get('unit')}</span></td></tr>
+                            <tr><td><strong>类型:</strong></td><td><span class="badge bg-success">派生指标</span></td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>公式信息</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>依赖数量:</strong></td><td>${selectedDependencies.length}个</td></tr>
+                        </table>
+                        <div class="mt-2">
+                            <strong>依赖指标:</strong><br>
+                            <div class="mt-1">
+                                ${selectedDependencies.map(dep => `<span class="badge bg-info me-1 mb-1">${dep}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>计算公式</h6>
+                        <div class="formula-code">${formData.get('formula')}</div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>描述</h6>
+                        <p>${formData.get('description') || '无描述'}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('previewContent').innerHTML = previewContent;
+            new bootstrap.Modal(document.getElementById('previewModal')).show();
+        }
+
+        // 验证公式
+        function validateFormula() {
+            const formula = document.getElementById('formula').value;
+            const selectedDependencies = Array.from(document.getElementById('dependencies').selectedOptions)
+                .map(option => option.value);
+            
+            if (!formula.trim()) {
+                alert('请输入计算公式');
+                return;
+            }
+            
+            // 简单的公式验证
+            let isValid = true;
+            let errorMessage = '';
+            
+            // 检查括号匹配
+            let openParens = 0;
+            for (let char of formula) {
+                if (char === '(') openParens++;
+                if (char === ')') openParens--;
+                if (openParens < 0) {
+                    isValid = false;
+                    errorMessage = '括号不匹配';
+                    break;
+                }
+            }
+            if (openParens !== 0) {
+                isValid = false;
+                errorMessage = '括号不匹配';
+            }
+            
+            // 检查是否有依赖指标被引用但没有选择
+            const metricPattern = /[\w\u4e00-\u9fa5]+\.[\w\u4e00-\u9fa5]+\.[\w\u4e00-\u9fa5]+/g;
+            const matches = formula.match(metricPattern);
+            if (matches) {
+                for (let match of matches) {
+                    if (!selectedDependencies.includes(match)) {
+                        isValid = false;
+                        errorMessage = `公式中引用了未选择的指标: ${match}`;
+                        break;
+                    }
+                }
+            }
+            
+            if (isValid) {
+                alert('公式验证通过！');
+            } else {
+                alert('公式验证失败: ' + errorMessage);
+            }
+        }
+
+        // 表单验证
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const identifier = document.getElementById('identifier').value;
+            const name = document.getElementById('name').value;
+            const category = document.getElementById('category').value;
+            const subCategory = document.getElementById('subCategory').value;
+            const unit = document.getElementById('unit').value;
+            const formula = document.getElementById('formula').value;
+            const selectedDependencies = Array.from(document.getElementById('dependencies').selectedOptions);
+            
+            if (!identifier || !name || !category || !subCategory || !unit || !formula) {
+                e.preventDefault();
+                alert('请填写所有必填字段');
+                return;
+            }
+            
+            // 验证标识符格式
+            if (!/^[\w\u4e00-\u9fa5]+\.[\w\u4e00-\u9fa5]+\.[\w\u4e00-\u9fa5]+$/.test(identifier)) {
+                e.preventDefault();
+                alert('指标标识符格式不正确，应为: 分类.子分类.指标名称');
+                return;
+            }
+            
+            // 验证依赖指标
+            const metricPattern = /[\w\u4e00-\u9fa5]+\.[\w\u4e00-\u9fa5]+\.[\w\u4e00-\u9fa5]+/g;
+            const matches = formula.match(metricPattern);
+            if (matches) {
+                for (let match of matches) {
+                    if (!selectedDependencies.some(dep => dep.value === match)) {
+                        e.preventDefault();
+                        alert(`公式中引用了未选择的指标: ${match}`);
+                        return;
+                    }
+                }
+            }
+        });
+
+        // 监听依赖指标选择变化
+        document.getElementById('dependencies').addEventListener('change', updateDependencyPreview);
+    </script>
+</body>
+</html>

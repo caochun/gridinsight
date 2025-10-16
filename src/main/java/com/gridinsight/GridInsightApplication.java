@@ -13,6 +13,6 @@ public class GridInsightApplication {
         SpringApplication.run(GridInsightApplication.class, args);
         System.out.println("=== GridInsight 电力行业数字化管控指标系统启动成功 ===");
         System.out.println("服务地址: http://localhost:8080");
-        System.out.println("API文档: http://localhost:8080/api/indicators/health");
+        System.out.println("系统已重构为基于Metric的指标管理系统");
     }
 }

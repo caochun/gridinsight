@@ -1,508 +1,173 @@
-# GridInsight 电力行业数字化管控指标系统
+# GridInsight 指标平台（Metric-based）
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.18-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Java](https://img.shields.io/badge/Java-11-orange.svg)](https://www.oracle.com/java/)
-[![Maven](https://img.shields.io/badge/Maven-3.6+-blue.svg)](https://maven.apache.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+面向电力行业的指标（Metric）管理与计算平台。支持基础指标从外部数据源采集，派生指标通过公式计算生成，提供事件驱动与定时计算两类更新策略，内置 Web 管理界面与 REST API，并预留接入时序数据库能力。
 
-## 📋 项目简介
+- Java 17+
+- Spring Boot 3.4.5
+- 端口：9000（server.port=9000）
 
-GridInsight是一个基于Spring Boot的电力行业数字化管控指标查询服务系统。该系统提供了完整的指标体系管理、指标计算和REST API接口，支持基础指标和衍生指标的智能计算。
+## 核心概念
 
-### 🎯 核心功能
+### Metric（指标）
+- **定义**：电力系统中可观测、可测量的业务指标，如电压、电流、功率、故障率等
+- **唯一标识**：采用"分类.子分类.名称"三级层次结构，如"中压拓扑.配变统计.配变总数"
+- **基本属性**：包含名称、分类、子分类、单位、描述等元数据
+- **数据质量**：每个指标值都带有质量标识（GOOD/STALE/ERROR），用于数据可信度评估
 
-- **指标体系管理**: 支持14个基础指标和8个衍生指标
-- **智能计算引擎**: 自动处理指标依赖关系和公式计算
-- **REST API接口**: 提供完整的RESTful API服务
-- **模拟数据源**: 智能生成符合业务场景的模拟数据
-- **批量查询**: 支持同时查询多个指标
-- **错误处理**: 完善的错误处理和状态码管理
+### BasicMetric（基础指标）
+- **定义**：直接从外部数据源采集的原始指标，是派生指标计算的基础
+- **数据源**：支持多种采集方式
+  - HTTP_API：通过REST API获取数据
+  - MQTT：订阅消息队列主题
+  - DATABASE：从关系型数据库查询
+  - FILE：从文件系统读取
+- **更新机制**：根据 `refreshInterval`（刷新间隔）定时从数据源拉取最新值
+- **存储**：采集到的值存储到时序数据库中，支持历史查询
 
-## 🏛️ 核心领域模型
+### DerivedMetric（派生指标）
+- **定义**：通过数学公式计算得出的指标，依赖一个或多个基础指标或其他派生指标
+- **计算公式**：支持复杂数学表达式，包括：
+  - 基本运算：+、-、*、/
+  - 数学函数：sqrt()、abs()、max()、min()
+  - 括号优先级：()
+  - 指标引用：通过标识符引用其他指标值
+- **依赖关系**：自动解析公式中的指标依赖，构建依赖图
+- **更新策略**：
+  - **REALTIME**：每次查询时实时计算，不预先存储，适合计算成本低的指标
+  - **DEPENDENCY_DRIVEN**：当依赖的指标更新时，自动触发计算并存储，适合需要及时反映变化的指标
+  - **SCHEDULED**：按照固定时间间隔（如每5分钟）定时计算并存储，适合计算成本高的指标
+- **循环依赖检测**：系统自动检测并阻止循环依赖，确保计算逻辑的正确性
 
-GridInsight系统基于领域驱动设计(DDD)思想，构建了完整的电力行业数字化管控指标领域模型。
+### MetricValue（指标值）
+- **结构**：包含指标标识符、数值、单位、时间戳、数据质量等信息
+- **时间戳**：记录指标值的采集或计算时间
+- **数据质量**：标识数据的可信度状态
+- **单位**：保持与指标定义的一致性
 
-### 📊 领域模型层次结构
+### DataSource（数据源）
+- **配置**：定义外部数据源的连接参数和采集策略
+- **类型**：支持HTTP、MQTT、数据库、文件等多种数据源
+- **地址**：数据源的具体访问地址或连接信息
+- **启用状态**：可动态启用/禁用数据源，便于运维管理
 
-```
-领域模型 (Domain Model)
-├── 指标类型 (IndicatorType) - 枚举类型
-├── 基础指标 (Indicator) - 实体类
-└── 衍生指标 (DerivedIndicator) - 实体类
-    └── 继承自 Indicator
-```
 
-### 🎯 核心领域对象
+## 架构与模块
 
-#### 1. **IndicatorType (指标类型枚举)**
-```java
-public enum IndicatorType {
-    绝对值("绝对值"),      // 直接测量的数值
-    比率("比率"),          // 比例关系
-    同比("同比"),          // 同期比较
-    环比("环比"),          // 环比比较
-    派生指标("派生指标")    // 计算得出的指标
-}
-```
+- domain/model：`Metric`、`BasicMetric`、`DerivedMetric`、`MetricValue` 等
+- domain/service：
+  - `MetricCalculationService`：计算中枢；管理注册表；分派基础/派生计算；结果缓存（5 分钟有效）；依赖图与统计
+  - `FormulaEngine` / `FormulaParser`：公式解析与求值（支持中文标识符、()、+-*/、sqrt/abs/max/min）
+- service：
+  - `MetricConfigService`：启动加载 `resources/metrics/*.yaml` 并同步注册到计算服务
+  - `DataSourceService`：模拟 HTTP/MQTT/DB/FILE 取数
+  - `MetricSchedulerService`：定时任务（基础：`refreshInterval`；派生仅 SCHEDULED）
+  - `EventDrivenMetricUpdateService` / `MetricUpdateEventListener`：事件驱动依赖更新（发布/监听 `MetricUpdateEvent`）
+  - `TimeSeriesDataService`：时序占位实现（内存），可替换 InfluxDB 等
+- controller：
+  - `MetricController`：REST API（查询/列表/批量/健康/清缓存）
+  - `MetricManagementController`：Web UI（定义管理、查询定义 API）
+  - `ApiDocController`：API 文档页（`/api/metrics`）
 
-**设计理念**: 定义了电力行业指标的基本分类，为指标计算和展示提供类型约束。
+## 启动与访问
 
-#### 2. **Indicator (基础指标实体)**
-```java
-public class Indicator {
-    private String name;                    // 指标名称
-    private String category;                // 指标分类
-    private String subCategory;            // 指标子分类
-    private IndicatorType indicatorType;   // 指标类型
-    private String unit;                   // 指标单位
-    private String dataSource;             // 数据来源URL
-    private String fullIdentifier;         // 完整标识符
-    private boolean derived;               // 是否为衍生指标
-}
-```
-
-**核心特性**:
-- **唯一标识**: 通过`fullIdentifier`(格式: `分类.子分类.指标名称`)实现全局唯一
-- **数据溯源**: `dataSource`字段记录数据来源，支持Web API、MQTT等多种数据源
-- **分类体系**: 支持多级分类，便于指标管理和查询
-- **类型约束**: 通过`indicatorType`确保指标类型的正确性
-
-#### 3. **DerivedIndicator (衍生指标实体)**
-```java
-public class DerivedIndicator extends Indicator {
-    private String formula;                    // 计算公式
-    private List<Indicator> dependencies;      // 依赖指标列表
-    private int dependencyCount;               // 依赖指标数量
-    private boolean validFormula;             // 公式有效性
-}
-```
-
-**核心特性**:
-- **公式计算**: 支持复杂的数学表达式，如`(1 - A / B) * 100`
-- **依赖管理**: 自动追踪和管理依赖的基础指标
-- **递归计算**: 支持衍生指标之间的相互依赖
-- **公式验证**: 内置公式有效性检查机制
-
-### 🔄 领域模型关系
-
-```mermaid
-classDiagram
-    class IndicatorType {
-        <<enumeration>>
-        +绝对值
-        +比率
-        +同比
-        +环比
-        +派生指标
-    }
-    
-    class Indicator {
-        -String name
-        -String category
-        -String subCategory
-        -IndicatorType indicatorType
-        -String unit
-        -String dataSource
-        -String fullIdentifier
-        -boolean derived
-        +getFullIdentifier()
-        +isDerived()
-    }
-    
-    class DerivedIndicator {
-        -String formula
-        -List~Indicator~ dependencies
-        -int dependencyCount
-        -boolean validFormula
-        +addDependency(Indicator)
-        +dependsOn(Indicator)
-        +isValidFormula()
-    }
-    
-    IndicatorType --> Indicator : 类型约束
-    Indicator <|-- DerivedIndicator : 继承关系
-    DerivedIndicator --> Indicator : 依赖关系
-```
-
-### 🎨 设计模式应用
-
-#### 1. **继承模式 (Inheritance)**
-- `DerivedIndicator`继承自`Indicator`，复用基础属性
-- 体现了"衍生指标是特殊类型的基础指标"的领域概念
-
-#### 2. **组合模式 (Composition)**
-- `DerivedIndicator`通过`dependencies`组合多个`Indicator`
-- 实现了指标间的依赖关系建模
-
-#### 3. **策略模式 (Strategy)**
-- 通过`IndicatorType`枚举实现不同类型的指标处理策略
-- 为后续扩展新的指标类型提供灵活性
-
-### 📋 领域规则
-
-#### 1. **指标命名规则**
-- 格式: `分类.子分类.指标名称`
-- 示例: `中压拓扑.配变统计.配变总数`
-
-#### 2. **衍生指标计算规则**
-- 公式必须包含所有依赖指标的名称
-- 支持四则运算和括号
-- 自动处理依赖指标的递归计算
-
-#### 3. **数据源规则**
-- 基础指标必须有有效的数据源URL
-- 衍生指标的数据源为null（通过计算得出）
-- 支持HTTP/HTTPS、MQTT等多种协议
-
-### 🔧 领域服务
-
-#### 1. **指标查询服务 (IndicatorQueryService)**
-- 负责指标的加载、查询和计算
-- 实现基础指标和衍生指标的统一处理
-- 提供数学表达式解析能力
-
-#### 2. **数据源服务 (MockDataSourceService)**
-- 模拟真实数据源的行为
-- 根据数据源URL生成相应的模拟数据
-- 支持数据缓存和性能优化
-
-## 🏗️ 系统架构
-
-```
-GridInsight/
-├── src/main/java/com/gridinsight/
-│   ├── GridInsightApplication.java          # Spring Boot主应用
-│   ├── controller/
-│   │   └── IndicatorController.java        # REST API控制器
-│   ├── service/
-│   │   ├── IndicatorQueryService.java      # 指标查询服务
-│   │   └── MockDataSourceService.java       # 模拟数据源服务
-│   └── domain/model/                        # 领域模型
-│       ├── Indicator.java                   # 基础指标类
-│       ├── DerivedIndicator.java           # 衍生指标类
-│       └── IndicatorType.java              # 指标类型枚举
-├── src/main/resources/
-│   └── output/                              # JSON数据文件
-│       ├── basic_indicators_*.json         # 基础指标数据
-│       ├── derived_indicators_*.json       # 衍生指标数据
-│       └── complete_indicator_system_*.json # 完整指标体系
-└── pom.xml                                 # Maven配置文件
-```
-
-## 🚀 快速开始
-
-### 环境要求
-
-- **Java**: 11 或更高版本
-- **Maven**: 3.6 或更高版本
-- **操作系统**: Windows, macOS, Linux
-
-### 安装步骤
-
-1. **克隆项目**
-   ```bash
-   git clone <repository-url>
-   cd GridInsight
-   ```
-
-2. **编译项目**
-   ```bash
-   mvn clean compile
-   ```
-
-3. **启动服务**
-   ```bash
-   mvn spring-boot:run
-   ```
-
-4. **验证服务**
-   ```bash
-   curl http://localhost:8080/api/indicators/health
-   ```
-
-### 服务地址
-
-- **服务地址**: http://localhost:8080
-- **健康检查**: http://localhost:8080/api/indicators/health
-
-## 📚 API文档
-
-### 基础接口
-
-#### 1. 健康检查
-```http
-GET /api/indicators/health
-```
-
-**响应示例**:
-```json
-{
-  "service": "Indicator Query Service",
-  "status": "UP",
-  "timestamp": 1759919544033
-}
-```
-
-#### 2. 获取指标列表
-```http
-GET /api/indicators/list
-```
-
-**响应示例**:
-```json
-{
-  "success": true,
-  "count": 22,
-  "identifiers": [
-    "中压拓扑.配变统计.配变总数",
-    "拓扑质量.中压拓扑准确性.中压拓扑关系准确率",
-    ...
-  ]
-}
-```
-
-#### 3. 查询单个指标
-```http
-GET /api/indicators/query?fullIdentifier={指标标识符}
-```
-
-**基础指标查询示例**:
 ```bash
-curl "http://localhost:8080/api/indicators/query?fullIdentifier=中压拓扑.配变统计.配变总数"
-```
-
-**响应示例**:
-```json
-{
-  "success": true,
-  "indicatorName": "配变总数",
-  "fullIdentifier": "中压拓扑.配变统计.配变总数",
-  "unit": "个",
-  "value": 3252.5019815159726,
-  "dataSource": "https://api.grid-monitor.com/v1/mv-topology/transformer-total",
-  "indicatorType": "基础指标"
-}
-```
-
-**衍生指标查询示例**:
-```bash
-curl "http://localhost:8080/api/indicators/query?fullIdentifier=拓扑质量.中压拓扑准确性.中压拓扑关系准确率"
-```
-
-**响应示例**:
-```json
-{
-  "success": true,
-  "indicatorName": "中压拓扑关系准确率",
-  "fullIdentifier": "拓扑质量.中压拓扑准确性.中压拓扑关系准确率",
-  "unit": "%",
-  "value": 99.39554159775413,
-  "formula": "(1 - 配变挂接馈线、具体分段位置与现场实际运行不一致数量 / 配变总数) * 100",
-  "indicatorType": "衍生指标",
-  "dependencyValues": {
-    "配变总数": 3252.5019815159726,
-    "配变挂接馈线、具体分段位置与现场实际运行不一致数量": 19.660021510486615
-  }
-}
-```
-
-#### 4. 批量查询指标
-```http
-POST /api/indicators/batch-query
-Content-Type: application/json
-
-["指标标识符1", "指标标识符2", "指标标识符3"]
-```
-
-**请求示例**:
-```bash
-curl -X POST "http://localhost:8080/api/indicators/batch-query" \
-  -H "Content-Type: application/json" \
-  -d '["中压拓扑.配变统计.配变总数", "拓扑质量.中压拓扑准确性.中压拓扑关系准确率"]'
-```
-
-**响应示例**:
-```json
-{
-  "success": true,
-  "successCount": 2,
-  "errorCount": 0,
-  "successResults": {
-    "中压拓扑.配变统计.配变总数": {
-      "indicatorName": "配变总数",
-      "value": 3252.5019815159726,
-      "unit": "个",
-      "indicatorType": "基础指标"
-    },
-    "拓扑质量.中压拓扑准确性.中压拓扑关系准确率": {
-      "indicatorName": "中压拓扑关系准确率",
-      "value": 99.39554159775413,
-      "unit": "%",
-      "indicatorType": "衍生指标"
-    }
-  },
-  "errorResults": {}
-}
-```
-
-## 📊 指标体系
-
-### 基础指标 (14个)
-
-| 指标名称 | 分类 | 单位 | 数据源 |
-|---------|------|------|--------|
-| 配变总数 | 中压拓扑 | 个 | https://api.grid-monitor.com/v1/mv-topology/transformer-total |
-| 配变挂接馈线、具体分段位置与现场实际运行不一致数量 | 中压拓扑 | 个 | https://api.grid-monitor.com/v1/mv-topology/inconsistent-count |
-| 变户关系不正确的低压用户数 | 低压用户关系 | 户 | https://api.grid-monitor.com/v1/lv-customer/transformer-relationship/incorrect-count |
-| 全省低压用户总数 | 低压用户关系 | 户 | https://api.grid-monitor.com/v1/lv-customer/total-count |
-| ... | ... | ... | ... |
-
-### 衍生指标 (8个)
-
-| 指标名称 | 分类 | 单位 | 计算公式 |
-|---------|------|------|----------|
-| 中压拓扑关系准确率 | 拓扑质量 | % | (1 - 配变挂接馈线、具体分段位置与现场实际运行不一致数量 / 配变总数) * 100 |
-| 中压配网杆塔、环网柜、站房坐标抽检通过率 | 坐标质量 | % | (抽查中压配网核心设备的坐标正确数量 / 抽查中压配网核心设备坐标总数) * 100 |
-| 电缆通道上图率 | 电缆通道上图质量 | % | (电缆通道上图规模数 / 电缆通道规模总数) * 100 |
-| ... | ... | ... | ... |
-
-## 🔧 技术特性
-
-### 核心组件
-
-#### 1. IndicatorQueryService (指标查询服务)
-- 从JSON文件加载指标定义
-- 支持基础指标直接数据源查询
-- 支持衍生指标公式计算
-- 包含数学表达式解析器
-
-#### 2. MockDataSourceService (模拟数据源服务)
-- 根据数据源URL生成相应的模拟数据
-- 支持数据缓存机制
-- 针对不同指标类型生成合理数值
-
-#### 3. IndicatorController (REST控制器)
-- 单个指标查询接口
-- 批量指标查询接口
-- 指标列表获取接口
-- 健康检查接口
-
-### 技术栈
-
-- **框架**: Spring Boot 2.7.18
-- **语言**: Java 11
-- **构建工具**: Maven 3.6+
-- **JSON处理**: Jackson 2.15.2
-- **测试框架**: JUnit 5, AssertJ
-- **服务器**: 内嵌Tomcat
-
-## 🧪 测试
-
-### 运行测试
-```bash
-mvn test
-```
-
-### 测试覆盖率
-- 单元测试覆盖率达到90%+
-- 包含指标查询、数据源模拟、API接口等核心功能测试
-
-### 性能测试
-- **响应时间**: 单指标查询 < 100ms
-- **批量查询**: 3个指标 < 200ms
-- **并发处理**: 支持多请求并发
-
-## 📁 项目结构
-
-```
-GridInsight/
-├── README.md                               # 项目说明文档
-├── pom.xml                                # Maven配置文件
-├── api-test-summary.md                    # API测试总结
-├── test-api.html                          # API测试页面
-├── src/
-│   ├── main/
-│   │   ├── java/com/gridinsight/
-│   │   │   ├── GridInsightApplication.java
-│   │   │   ├── controller/
-│   │   │   │   └── IndicatorController.java
-│   │   │   ├── service/
-│   │   │   │   ├── IndicatorQueryService.java
-│   │   │   │   └── MockDataSourceService.java
-│   │   │   └── domain/
-│   │   │       ├── model/
-│   │   │       │   ├── Indicator.java
-│   │   │       │   ├── DerivedIndicator.java
-│   │   │       │   └── IndicatorType.java
-│   │   │       └── example/
-│   │   │           ├── IndicatorExample.java
-│   │   │           ├── StandardGridIndicatorAnalysis.java
-│   │   │           └── GridIndicatorJsonGenerator.java
-│   │   └── resources/
-│   │       └── output/                     # JSON数据文件
-│   └── test/java/com/gridinsight/
-│       └── domain/model/
-│           ├── IndicatorTest.java
-│           └── DerivedIndicatorTest.java
-└── output/                                # 生成的JSON输出文件
-```
-
-## 🚀 部署
-
-### 开发环境
-```bash
+mvn clean package -DskipTests
 mvn spring-boot:run
 ```
 
-### 生产环境
+- 管理入口：`http://localhost:9000/admin/metrics`
+  - 基础指标：`/admin/metrics/basic`
+  - 派生指标：`/admin/metrics/derived`
+- API 文档页：`http://localhost:9000/api/metrics`（在线试调；友好展示“实时值/指标定义”）
+
+## 指标配置（YAML）
+
+- 基础：`src/main/resources/metrics/basic-metrics.yaml`
+  - key 为完整标识符；`dataSource` 包含 `sourceType/sourceAddress/sourceName/refreshInterval/enabled`
+- 派生：`src/main/resources/metrics/derived-metrics.yaml`
+  - `formula` 引用其他指标标识符
+  - `dependencies` 依赖列表
+  - `updateStrategy`：`REALTIME/DEPENDENCY_DRIVEN/SCHEDULED`
+  - `calculationInterval`：仅 SCHEDULED 生效
+
+启动时由 `MetricConfigService` 自动加载并注册到 `MetricCalculationService`；控制台打印加载数量。
+
+## 事件驱动依赖更新
+
+1) 基础指标按 `refreshInterval` 定时更新，写入时序服务并发布 `MetricUpdateEvent`  
+2) 监听器 `MetricUpdateEventListener` 查找依赖此指标的派生指标  
+3) 对 `DEPENDENCY_DRIVEN` 派生指标触发异步计算（含冷却期防抖）  
+循环依赖由 `FormulaParser` 定义/解析阶段校验。
+
+## REST API
+
+- 健康：GET `/api/metrics/health`
+- 列表：GET `/api/metrics/list`
+- 单查：GET `/api/metrics/query?identifier=分类.子分类.名称`
+- 批量：POST `/api/metrics/batch-query`（Body: `[]` 标识符数组）
+- 清缓存：POST `/api/metrics/clear-cache`
+
+错误响应：`{"success": false, "error": "..."}`  
+成功实时值包含：`identifier/value/unit/timestamp/quality`
+
+## Web UI
+
+- 管理页：查看/新增/编辑/删除基础与派生；派生页展示 `updateStrategy` 与（SCHEDULED）`calculationInterval`
+- API 文档页：
+  - 实时值：表格友好展示（标识符、数值+单位、时间、质量）
+  - 指标定义：表格友好展示（名称、分类/子分类、单位、类型、依赖、策略/间隔、公式、描述）
+
+## 测试
+
 ```bash
-# 打包
-mvn clean package
-
-# 运行JAR文件
-java -jar target/grid-insight-domain-1.0.0.jar
+mvn clean test
 ```
 
-### Docker部署 (可选)
-```dockerfile
-FROM openjdk:11-jre-slim
-COPY target/grid-insight-domain-1.0.0.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+覆盖：
+- 单元：公式引擎/解析、模型
+- 集成：计算服务与数据源模拟
+- 事件驱动：依赖触发、级联与多场景校验
+- SCHEDULED 策略：间隔/注册与计算验证
+
+## 时序数据库
+
+`TimeSeriesDataService` 为内存占位：
+- `storeMetricValue` 写入
+- `getLatestMetricValue` 查询
+- `clearAllData` 清空  
+可在 `TimeSeriesConfig` 集成 InfluxDB/TDengine，并在调度与事件链路中落库与读取。
+
+## 配置与调试
+
+- `src/main/resources/application.properties`
+  - `server.port=9000`
+  - `spring.thymeleaf.cache=false`（开发期禁用模板缓存）
+  - 时序库占位配置
+
+## 目录结构
+
+```
+src/main/java/com/gridinsight/
+  ├─ domain/
+  │   ├─ model/ (Metric, BasicMetric, DerivedMetric, MetricValue ...)
+  │   └─ service/ (MetricCalculationService, FormulaEngine, FormulaParser)
+  ├─ service/ (MetricConfigService, MetricSchedulerService, EventDriven*, DataSourceService, TimeSeriesDataService)
+  └─ controller/ (MetricController, MetricManagementController, ApiDocController)
+src/main/resources/
+  ├─ metrics/
+  │   ├─ basic-metrics.yaml
+  │   └─ derived-metrics.yaml
+  └─ templates/ (Web UI 页面，含 api-doc.html)
 ```
 
-## 🤝 贡献指南
+## 已知限制与规划
 
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
-## 📝 更新日志
-
-### v1.0.0 (2025-10-08)
-- ✨ 初始版本发布
-- ✨ 支持14个基础指标和8个衍生指标
-- ✨ 完整的REST API接口
-- ✨ 智能指标计算引擎
-- ✨ 模拟数据源服务
-- ✨ 批量查询功能
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 📞 联系方式
-
-- **项目维护者**: GridInsight Team
-- **邮箱**: support@gridinsight.com
-- **项目地址**: https://github.com/gridinsight/grid-insight
-
-## 🙏 致谢
-
-感谢所有为GridInsight项目做出贡献的开发者和用户！
+- 公式函数有限（sqrt/abs/max/min），可扩展
+- 时序库为内存占位，建议切到真实 TSDB
+- Web UI 规划：调度/事件监控、时序曲线可视化、定义导入导出、审计与权限
 
 ---
-
-**GridInsight - 让电力行业数字化管控更智能！** ⚡
+快速验证：
+1) `http://localhost:9000/api/metrics/health`  
+2) `http://localhost:9000/api/metrics/list`  
+3) `http://localhost:9000/api/metrics`
