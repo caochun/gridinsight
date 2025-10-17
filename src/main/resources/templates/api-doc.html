@@ -66,10 +66,19 @@
         <pre><code>POST /api/metrics/batch-query</code>
 Body: ["标识符1","标识符2"]</pre>
         <div class="input-group mb-2">
-            <input id="batch-ids" class="form-control" placeholder='例如: ["中压拓扑.配变统计.配变总数"]'>
+            <input id="batch-ids" class="form-control" placeholder='例如: ["测试.数据库.配变总数","测试.数据库.用户总数"]'>
             <button class="btn btn-outline-primary" onclick="queryBatch()">查询</button>
         </div>
-        <div class="mt-2 small text-muted" id="resp-batch"></div>
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">批量查询结果</div>
+                    <div class="card-body">
+                        <div class="small" id="resp-batch"><span class="text-muted">请输入标识符数组进行查询</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="mb-4">
@@ -167,7 +176,62 @@ function queryBatch(){
   let ids=document.getElementById('batch-ids').value.trim();
   try{ JSON.parse(ids); }catch(e){ alert('请输入合法JSON数组'); return; }
   fetch('/api/metrics/batch-query',{method:'POST',headers:{'Content-Type':'application/json'},body:ids})
-    .then(r=>r.text()).then(t=>{document.getElementById('resp-batch').innerText=t;});
+    .then(r=>r.json())
+    .then(data=>{ renderBatchFriendly('resp-batch', data); })
+    .catch(()=>{ document.getElementById('resp-batch').innerHTML='<span class="text-danger">请求失败</span>'; });
+}
+
+function renderBatchFriendly(target, data){
+  const box = document.getElementById(target);
+  if (!data) { box.innerHTML = '<span class="text-danger">无返回</span>'; return; }
+  if (data.success === false || data.error){
+    const msg = data.error || '查询失败';
+    box.innerHTML = `<div class="alert alert-danger p-2 mb-0"><i class="bi bi-exclamation-triangle"></i> ${msg}</div>`;
+    return;
+  }
+  
+  if (!data.successResults || Object.keys(data.successResults).length === 0) {
+    box.innerHTML = '<span class="text-muted">无成功结果</span>';
+    return;
+  }
+  
+  let html = '<div class="row g-3">';
+  for (const [identifier, result] of Object.entries(data.successResults)) {
+    const val = result.value || '-';
+    const unit = result.unit || '';
+    const ts = result.timestamp || '-';
+    const quality = result.quality || '-';
+    const id = result.identifier || identifier;
+    
+    html += `
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <strong>${identifier}</strong>
+          </div>
+          <div class="card-body">
+            <table class="table table-sm mb-0">
+              <tr><td><strong>标识符</strong></td><td><code>${id}</code></td></tr>
+              <tr><td><strong>数值</strong></td><td><span class="fw-bold">${val}</span> ${unit?`<span class="badge bg-secondary">${unit}</span>`:''}</td></tr>
+              <tr><td><strong>时间</strong></td><td>${ts}</td></tr>
+              <tr><td><strong>质量</strong></td><td><span class="badge ${(''+quality).toUpperCase()==='GOOD'?'bg-success':(''+quality).toUpperCase()==='BAD'?'bg-danger':'bg-secondary'}">${quality}</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  html += '</div>';
+  
+  if (data.errorResults && Object.keys(data.errorResults).length > 0) {
+    html += '<div class="mt-3"><h6 class="text-danger">错误结果：</h6>';
+    for (const [identifier, error] of Object.entries(data.errorResults)) {
+      html += `<div class="alert alert-warning p-2 mb-2"><strong>${identifier}:</strong> ${error}</div>`;
+    }
+    html += '</div>';
+  }
+  
+  box.innerHTML = html;
 }
 function clearCache(){
   fetch('/api/metrics/clear-cache',{method:'POST'})
