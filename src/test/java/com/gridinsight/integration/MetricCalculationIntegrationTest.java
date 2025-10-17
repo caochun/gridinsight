@@ -41,7 +41,7 @@ public class MetricCalculationIntegrationTest {
             "配变统计",
             "个",
             "配变总数",
-            DataSource.createHttpApi("http://api1.com", "API1", "描述1")
+            DataSource.createHttpApi("http://api1.com", "GET", null, "API1", "描述1", 300)
         );
         
         // 添加到服务
@@ -61,12 +61,12 @@ public class MetricCalculationIntegrationTest {
         // 创建基础指标
         BasicMetric total = new BasicMetric(
             "配变总数", "中压拓扑", "配变统计", "个", "总数",
-            DataSource.createHttpApi("http://api1.com", "API1", "描述1")
+            DataSource.createHttpApi("http://api1.com", "GET", null, "API1", "描述1", 300)
         );
         
         BasicMetric inconsistent = new BasicMetric(
             "不一致数量", "中压拓扑", "拓扑不一致", "个", "不一致数量",
-            DataSource.createHttpApi("http://api2.com", "API2", "描述2")
+            DataSource.createHttpApi("http://api2.com", "GET", null, "API2", "描述2", 300)
         );
         
         // 创建派生指标

@@ -104,11 +104,49 @@ public class MetricManagementController {
         form.setDescription(metric.getDescription());
         
         if (metric.getDataSource() != null) {
-            form.setSourceType(metric.getDataSource().getSourceType().name());
-            form.setSourceAddress(metric.getDataSource().getSourceAddress());
-            form.setSourceName(metric.getDataSource().getSourceName());
-            form.setRefreshInterval(metric.getDataSource().getRefreshInterval());
-            form.setEnabled(metric.getDataSource().getEnabled());
+            DataSource dataSource = metric.getDataSource();
+            form.setSourceType(dataSource.getSourceType().name());
+            form.setSourceName(dataSource.getSourceName());
+            form.setRefreshInterval(dataSource.getRefreshInterval());
+            form.setEnabled(dataSource.getEnabled());
+            
+            // 根据数据源类型填充相应配置
+            switch (dataSource.getSourceType()) {
+                case HTTP_API:
+                    form.setHttpUrl(dataSource.getConfig("url", String.class));
+                    form.setHttpMethod(dataSource.getConfig("method", String.class));
+                    form.setHttpHeaders(dataSource.getConfig("headers", String.class));
+                    form.setHttpTimeout(dataSource.getConfig("timeout", Integer.class) != null ? 
+                        dataSource.getConfig("timeout", Integer.class) : 30000);
+                    break;
+                case MQTT:
+                    form.setMqttBroker(dataSource.getConfig("broker", String.class));
+                    form.setMqttPort(dataSource.getConfig("port", Integer.class) != null ? 
+                        dataSource.getConfig("port", Integer.class) : 1883);
+                    form.setMqttTopic(dataSource.getConfig("topic", String.class));
+                    form.setMqttQos(dataSource.getConfig("qos", Integer.class) != null ? 
+                        dataSource.getConfig("qos", Integer.class) : 0);
+                    form.setMqttClientId(dataSource.getConfig("clientId", String.class));
+                    form.setMqttUsername(dataSource.getConfig("username", String.class));
+                    form.setMqttPassword(dataSource.getConfig("password", String.class));
+                    break;
+                case DATABASE:
+                    form.setDbConnectionString(dataSource.getConfig("connectionString", String.class));
+                    form.setDbUsername(dataSource.getConfig("username", String.class));
+                    form.setDbPassword(dataSource.getConfig("password", String.class));
+                    form.setDbQuery(dataSource.getConfig("query", String.class));
+                    form.setDbDriver(dataSource.getConfig("driver", String.class));
+                    break;
+                case FILE:
+                    form.setFilePath(dataSource.getConfig("filePath", String.class));
+                    form.setFileEncoding(dataSource.getConfig("encoding", String.class));
+                    form.setFileFormat(dataSource.getConfig("format", String.class));
+                    form.setFileDelimiter(dataSource.getConfig("delimiter", String.class));
+                    break;
+            }
+            
+            // 设置兼容性字段
+            form.setSourceAddress(dataSource.getSourceAddress());
         }
         
         model.addAttribute("metric", form);
@@ -164,14 +202,8 @@ public class MetricManagementController {
     @PostMapping("/basic/save")
     public String saveBasicMetric(@ModelAttribute BasicMetricForm form) {
         try {
-            // 创建数据源
-            DataSource dataSource = new DataSource(
-                DataSource.SourceType.valueOf(form.getSourceType()),
-                form.getSourceAddress(),
-                form.getSourceName(),
-                Integer.valueOf(form.getRefreshInterval()),
-                form.isEnabled()
-            );
+            // 根据数据源类型创建数据源
+            DataSource dataSource = createDataSourceFromForm(form);
 
             // 创建基础指标
             BasicMetric metric = new BasicMetric(
@@ -240,14 +272,8 @@ public class MetricManagementController {
     @PostMapping("/basic/update")
     public String updateBasicMetric(@ModelAttribute BasicMetricForm form) {
         try {
-            // 创建数据源
-            DataSource dataSource = new DataSource(
-                DataSource.SourceType.valueOf(form.getSourceType()),
-                form.getSourceAddress(),
-                form.getSourceName(),
-                Integer.valueOf(form.getRefreshInterval()),
-                form.isEnabled()
-            );
+            // 根据数据源类型创建数据源
+            DataSource dataSource = createDataSourceFromForm(form);
 
             // 创建基础指标
             BasicMetric metric = new BasicMetric(
@@ -373,6 +399,75 @@ public class MetricManagementController {
         return ResponseEntity.ok(response);
     }
 
+    // ========== 辅助方法 ==========
+    
+    /**
+     * 根据表单数据创建数据源
+     */
+    private DataSource createDataSourceFromForm(BasicMetricForm form) {
+        DataSource.SourceType sourceType = DataSource.SourceType.valueOf(form.getSourceType());
+        
+        switch (sourceType) {
+            case HTTP_API:
+                Map<String, String> headers = new HashMap<>();
+                if (form.getHttpHeaders() != null && !form.getHttpHeaders().trim().isEmpty()) {
+                    // 解析请求头字符串，格式：key1:value1,key2:value2
+                    String[] headerPairs = form.getHttpHeaders().split(",");
+                    for (String pair : headerPairs) {
+                        String[] keyValue = pair.split(":", 2);
+                        if (keyValue.length == 2) {
+                            headers.put(keyValue[0].trim(), keyValue[1].trim());
+                        }
+                    }
+                }
+                return DataSource.createHttpApi(
+                    form.getHttpUrl(),
+                    form.getHttpMethod(),
+                    headers.isEmpty() ? null : headers,
+                    form.getSourceName(),
+                    form.getDescription(),
+                    form.getRefreshInterval()
+                );
+                
+            case MQTT:
+                return DataSource.createMqtt(
+                    form.getMqttBroker(),
+                    form.getMqttPort(),
+                    form.getMqttTopic(),
+                    form.getMqttQos(),
+                    form.getSourceName(),
+                    form.getDescription(),
+                    form.getRefreshInterval()
+                );
+                
+            case DATABASE:
+                return DataSource.createDatabase(
+                    form.getDbConnectionString(),
+                    form.getDbUsername(),
+                    form.getDbPassword(),
+                    form.getDbQuery(),
+                    form.getDbDriver(),
+                    form.getSourceName(),
+                    form.getDescription(),
+                    form.getRefreshInterval()
+                );
+                
+            case FILE:
+                return DataSource.createFile(
+                    form.getFilePath(),
+                    form.getFileEncoding(),
+                    form.getFileFormat(),
+                    form.getFileDelimiter(),
+                    form.getSourceName(),
+                    form.getDescription(),
+                    form.getRefreshInterval()
+                );
+                
+            default:
+                throw new IllegalArgumentException("不支持的数据源类型: " + sourceType);
+        }
+    }
+
     // ========== 表单类定义 ==========
 
     /**
@@ -386,10 +481,40 @@ public class MetricManagementController {
         private String unit;
         private String description;
         private String sourceType;
-        private String sourceAddress;
         private String sourceName;
         private int refreshInterval = 300;
         private boolean enabled = true;
+        
+        // HTTP API 配置
+        private String httpUrl;
+        private String httpMethod = "GET";
+        private String httpHeaders;
+        private int httpTimeout = 30000;
+        
+        // MQTT 配置
+        private String mqttBroker;
+        private int mqttPort = 1883;
+        private String mqttTopic;
+        private int mqttQos = 0;
+        private String mqttClientId;
+        private String mqttUsername;
+        private String mqttPassword;
+        
+        // DATABASE 配置
+        private String dbConnectionString;
+        private String dbUsername;
+        private String dbPassword;
+        private String dbQuery;
+        private String dbDriver;
+        
+        // FILE 配置
+        private String filePath;
+        private String fileEncoding = "UTF-8";
+        private String fileFormat = "CSV";
+        private String fileDelimiter = ",";
+        
+        // 兼容性字段
+        private String sourceAddress;
 
         // Getters and Setters
         public String getIdentifier() { return identifier; }
@@ -406,14 +531,64 @@ public class MetricManagementController {
         public void setDescription(String description) { this.description = description; }
         public String getSourceType() { return sourceType; }
         public void setSourceType(String sourceType) { this.sourceType = sourceType; }
-        public String getSourceAddress() { return sourceAddress; }
-        public void setSourceAddress(String sourceAddress) { this.sourceAddress = sourceAddress; }
         public String getSourceName() { return sourceName; }
         public void setSourceName(String sourceName) { this.sourceName = sourceName; }
         public int getRefreshInterval() { return refreshInterval; }
         public void setRefreshInterval(int refreshInterval) { this.refreshInterval = refreshInterval; }
         public boolean isEnabled() { return enabled; }
         public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        
+        // HTTP API Getters and Setters
+        public String getHttpUrl() { return httpUrl; }
+        public void setHttpUrl(String httpUrl) { this.httpUrl = httpUrl; }
+        public String getHttpMethod() { return httpMethod; }
+        public void setHttpMethod(String httpMethod) { this.httpMethod = httpMethod; }
+        public String getHttpHeaders() { return httpHeaders; }
+        public void setHttpHeaders(String httpHeaders) { this.httpHeaders = httpHeaders; }
+        public int getHttpTimeout() { return httpTimeout; }
+        public void setHttpTimeout(int httpTimeout) { this.httpTimeout = httpTimeout; }
+        
+        // MQTT Getters and Setters
+        public String getMqttBroker() { return mqttBroker; }
+        public void setMqttBroker(String mqttBroker) { this.mqttBroker = mqttBroker; }
+        public int getMqttPort() { return mqttPort; }
+        public void setMqttPort(int mqttPort) { this.mqttPort = mqttPort; }
+        public String getMqttTopic() { return mqttTopic; }
+        public void setMqttTopic(String mqttTopic) { this.mqttTopic = mqttTopic; }
+        public int getMqttQos() { return mqttQos; }
+        public void setMqttQos(int mqttQos) { this.mqttQos = mqttQos; }
+        public String getMqttClientId() { return mqttClientId; }
+        public void setMqttClientId(String mqttClientId) { this.mqttClientId = mqttClientId; }
+        public String getMqttUsername() { return mqttUsername; }
+        public void setMqttUsername(String mqttUsername) { this.mqttUsername = mqttUsername; }
+        public String getMqttPassword() { return mqttPassword; }
+        public void setMqttPassword(String mqttPassword) { this.mqttPassword = mqttPassword; }
+        
+        // DATABASE Getters and Setters
+        public String getDbConnectionString() { return dbConnectionString; }
+        public void setDbConnectionString(String dbConnectionString) { this.dbConnectionString = dbConnectionString; }
+        public String getDbUsername() { return dbUsername; }
+        public void setDbUsername(String dbUsername) { this.dbUsername = dbUsername; }
+        public String getDbPassword() { return dbPassword; }
+        public void setDbPassword(String dbPassword) { this.dbPassword = dbPassword; }
+        public String getDbQuery() { return dbQuery; }
+        public void setDbQuery(String dbQuery) { this.dbQuery = dbQuery; }
+        public String getDbDriver() { return dbDriver; }
+        public void setDbDriver(String dbDriver) { this.dbDriver = dbDriver; }
+        
+        // FILE Getters and Setters
+        public String getFilePath() { return filePath; }
+        public void setFilePath(String filePath) { this.filePath = filePath; }
+        public String getFileEncoding() { return fileEncoding; }
+        public void setFileEncoding(String fileEncoding) { this.fileEncoding = fileEncoding; }
+        public String getFileFormat() { return fileFormat; }
+        public void setFileFormat(String fileFormat) { this.fileFormat = fileFormat; }
+        public String getFileDelimiter() { return fileDelimiter; }
+        public void setFileDelimiter(String fileDelimiter) { this.fileDelimiter = fileDelimiter; }
+        
+        // 兼容性字段
+        public String getSourceAddress() { return sourceAddress; }
+        public void setSourceAddress(String sourceAddress) { this.sourceAddress = sourceAddress; }
     }
 
     /**

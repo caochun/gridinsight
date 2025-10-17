@@ -23,8 +23,11 @@ public class TestDataGenerator {
                 "中压配电网中配变的总数量",
                 DataSource.createHttpApi(
                     "https://api.grid-monitor.com/v1/mv-topology/transformer-total",
+                    "GET",
+                    null,
                     "配变统计API",
-                    "获取配变总数数据"
+                    "获取配变总数数据",
+                    300
                 )
             ),
             new BasicMetric(
@@ -35,8 +38,11 @@ public class TestDataGenerator {
                 "配变挂接馈线位置与现场实际运行不一致的数量",
                 DataSource.createHttpApi(
                     "https://api.grid-monitor.com/v1/mv-topology/inconsistent-count",
+                    "GET",
+                    null,
                     "拓扑一致性API",
-                    "获取拓扑不一致数据"
+                    "获取拓扑不一致数据",
+                    300
                 )
             ),
             new BasicMetric(
@@ -47,8 +53,11 @@ public class TestDataGenerator {
                 "全省低压用户的总数量",
                 DataSource.createHttpApi(
                     "https://api.grid-monitor.com/v1/lv-customer/total-count",
+                    "GET",
+                    null,
                     "用户统计API",
-                    "获取低压用户总数数据"
+                    "获取低压用户总数数据",
+                    300
                 )
             ),
             new BasicMetric(
@@ -59,8 +68,11 @@ public class TestDataGenerator {
                 "变户关系不正确的低压用户数量",
                 DataSource.createHttpApi(
                     "https://api.grid-monitor.com/v1/lv-customer/transformer-relationship/incorrect-count",
+                    "GET",
+                    null,
                     "变户关系API",
-                    "获取变户关系错误数据"
+                    "获取变户关系错误数据",
+                    300
                 )
             )
         );
@@ -113,9 +125,13 @@ public class TestDataGenerator {
                 "MW",
                 "实时发电功率",
                 DataSource.createMqtt(
+                    "mqtt://broker.example.com",
+                    1883,
                     "grid/power/realtime",
+                    0,
                     "实时功率MQTT",
-                    "实时功率数据订阅"
+                    "实时功率数据订阅",
+                    60
                 )
             ),
             new BasicMetric(
@@ -125,9 +141,13 @@ public class TestDataGenerator {
                 "kV",
                 "电网电压等级",
                 DataSource.createMqtt(
+                    "mqtt://broker.example.com",
+                    1883,
                     "grid/voltage/level",
+                    0,
                     "电压等级MQTT",
-                    "电压等级数据订阅"
+                    "电压等级数据订阅",
+                    60
                 )
             )
         );
@@ -144,12 +164,15 @@ public class TestDataGenerator {
                 "历史统计",
                 "MWh",
                 "历史发电量统计",
-                new DataSource(
-                    DataSource.SourceType.DATABASE,
+                DataSource.createDatabase(
                     "jdbc:mysql://localhost:3306/grid_data",
+                    "root",
+                    "password",
+                    "SELECT SUM(power_generation) FROM historical_data WHERE date >= ?",
+                    "com.mysql.cj.jdbc.Driver",
                     "历史数据数据库",
                     "历史发电量数据查询",
-                    3600 // 1小时刷新一次
+                    3600
                 )
             )
         );
@@ -166,12 +189,14 @@ public class TestDataGenerator {
                 "配置参数",
                 "个",
                 "系统配置参数",
-                new DataSource(
-                    DataSource.SourceType.FILE,
+                DataSource.createFile(
                     "/data/config/parameters.json",
+                    "UTF-8",
+                    "JSON",
+                    null,
                     "配置文件",
                     "系统配置参数文件",
-                    86400 // 24小时刷新一次
+                    86400
                 )
             )
         );

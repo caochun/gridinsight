@@ -134,11 +134,11 @@
                         <div class="mb-3">
                             <label for="sourceType" class="form-label required-field">数据源类型</label>
                             <select class="form-select" id="sourceType" th:field="*{sourceType}" 
-                                    onchange="updateDataSourceForm()" required>
+                                    onchange="updateDataSourceFields()" required>
                                 <option value="">选择数据源类型</option>
                                 <option th:each="type : ${dataSourceTypes}" 
-                                        th:value="${type}" 
-                                        th:text="${type}">HTTP_API</option>
+                                        th:value="${type.name()}" 
+                                        th:text="${type.displayName}">HTTP_API</option>
                             </select>
                         </div>
                     </div>
@@ -150,14 +150,199 @@
                         </div>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label for="sourceAddress" class="form-label required-field">数据源地址</label>
-                    <input type="text" class="form-control" id="sourceAddress" th:field="*{sourceAddress}" 
-                           placeholder="输入数据源地址" required>
-                    <div class="form-text" id="sourceAddressHelp">
-                        请根据选择的数据源类型输入相应的地址
+                
+                <!-- HTTP API 配置 -->
+                <div id="httpConfig" class="data-source-config" style="display: none;">
+                    <h5><i class="bi bi-globe"></i> HTTP API 配置</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="httpUrl" class="form-label required-field">API URL</label>
+                                <input type="url" class="form-control" id="httpUrl" th:field="*{httpUrl}" 
+                                       placeholder="https://api.example.com/metrics">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="httpMethod" class="form-label">HTTP 方法</label>
+                                <select class="form-select" id="httpMethod" th:field="*{httpMethod}">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="httpHeaders" class="form-label">请求头</label>
+                                <input type="text" class="form-control" id="httpHeaders" th:field="*{httpHeaders}" 
+                                       placeholder="Authorization:Bearer token,Content-Type:application/json">
+                                <div class="form-text">格式：key1:value1,key2:value2</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="httpTimeout" class="form-label">超时时间(毫秒)</label>
+                                <input type="number" class="form-control" id="httpTimeout" th:field="*{httpTimeout}" 
+                                       min="1000" placeholder="30000">
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
+                <!-- MQTT 配置 -->
+                <div id="mqttConfig" class="data-source-config" style="display: none;">
+                    <h5><i class="bi bi-broadcast"></i> MQTT 配置</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="mqttBroker" class="form-label required-field">Broker 地址</label>
+                                <input type="text" class="form-control" id="mqttBroker" th:field="*{mqttBroker}" 
+                                       placeholder="mqtt://broker.example.com">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="mqttPort" class="form-label">端口</label>
+                                <input type="number" class="form-control" id="mqttPort" th:field="*{mqttPort}" 
+                                       min="1" max="65535" placeholder="1883">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="mqttQos" class="form-label">QoS</label>
+                                <select class="form-select" id="mqttQos" th:field="*{mqttQos}">
+                                    <option value="0">0 - 最多一次</option>
+                                    <option value="1">1 - 至少一次</option>
+                                    <option value="2">2 - 恰好一次</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="mqttTopic" class="form-label required-field">Topic</label>
+                                <input type="text" class="form-control" id="mqttTopic" th:field="*{mqttTopic}" 
+                                       placeholder="metrics/power">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="mqttClientId" class="form-label">客户端 ID</label>
+                                <input type="text" class="form-control" id="mqttClientId" th:field="*{mqttClientId}" 
+                                       placeholder="gridinsight-client">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="mqttUsername" class="form-label">用户名</label>
+                                <input type="text" class="form-control" id="mqttUsername" th:field="*{mqttUsername}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="mqttPassword" class="form-label">密码</label>
+                                <input type="password" class="form-control" id="mqttPassword" th:field="*{mqttPassword}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DATABASE 配置 -->
+                <div id="databaseConfig" class="data-source-config" style="display: none;">
+                    <h5><i class="bi bi-database"></i> 数据库配置</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="dbConnectionString" class="form-label required-field">连接字符串</label>
+                                <input type="text" class="form-control" id="dbConnectionString" th:field="*{dbConnectionString}" 
+                                       placeholder="jdbc:mysql://localhost:3306/metrics">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="dbUsername" class="form-label">用户名</label>
+                                <input type="text" class="form-control" id="dbUsername" th:field="*{dbUsername}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="dbPassword" class="form-label">密码</label>
+                                <input type="password" class="form-control" id="dbPassword" th:field="*{dbPassword}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="dbQuery" class="form-label required-field">查询语句</label>
+                                <textarea class="form-control" id="dbQuery" th:field="*{dbQuery}" rows="3" 
+                                          placeholder="SELECT value FROM metrics WHERE id = ?"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="dbDriver" class="form-label">驱动类</label>
+                                <input type="text" class="form-control" id="dbDriver" th:field="*{dbDriver}" 
+                                       placeholder="com.mysql.cj.jdbc.Driver">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FILE 配置 -->
+                <div id="fileConfig" class="data-source-config" style="display: none;">
+                    <h5><i class="bi bi-file-text"></i> 文件配置</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="filePath" class="form-label required-field">文件路径</label>
+                                <input type="text" class="form-control" id="filePath" th:field="*{filePath}" 
+                                       placeholder="/data/metrics.csv">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="fileFormat" class="form-label">文件格式</label>
+                                <select class="form-select" id="fileFormat" th:field="*{fileFormat}">
+                                    <option value="CSV">CSV</option>
+                                    <option value="JSON">JSON</option>
+                                    <option value="XML">XML</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fileEncoding" class="form-label">编码</label>
+                                <select class="form-select" id="fileEncoding" th:field="*{fileEncoding}">
+                                    <option value="UTF-8">UTF-8</option>
+                                    <option value="GBK">GBK</option>
+                                    <option value="ISO-8859-1">ISO-8859-1</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fileDelimiter" class="form-label">分隔符</label>
+                                <input type="text" class="form-control" id="fileDelimiter" th:field="*{fileDelimiter}" 
+                                       placeholder=",">
+                                <div class="form-text">仅对CSV格式有效</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 通用配置 -->
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
@@ -221,32 +406,29 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 更新数据源表单提示
-        function updateDataSourceForm() {
+        // 更新数据源字段显示
+        function updateDataSourceFields() {
             const sourceType = document.getElementById('sourceType').value;
-            const sourceAddressHelp = document.getElementById('sourceAddressHelp');
-            const sourceAddress = document.getElementById('sourceAddress');
             
+            // 隐藏所有配置区域
+            document.querySelectorAll('.data-source-config').forEach(config => {
+                config.style.display = 'none';
+            });
+            
+            // 根据选择的类型显示相应配置
             switch(sourceType) {
                 case 'HTTP_API':
-                    sourceAddressHelp.textContent = 'HTTP API地址，例如: http://api.example.com/data';
-                    sourceAddress.placeholder = 'http://api.example.com/data';
+                    document.getElementById('httpConfig').style.display = 'block';
                     break;
                 case 'MQTT':
-                    sourceAddressHelp.textContent = 'MQTT broker地址和主题，例如: mqtt://broker.example.com:1883/topic';
-                    sourceAddress.placeholder = 'mqtt://broker.example.com:1883/topic';
+                    document.getElementById('mqttConfig').style.display = 'block';
                     break;
                 case 'DATABASE':
-                    sourceAddressHelp.textContent = '数据库连接字符串，例如: jdbc:mysql://db.example.com:3306/database';
-                    sourceAddress.placeholder = 'jdbc:mysql://db.example.com:3306/database';
+                    document.getElementById('databaseConfig').style.display = 'block';
                     break;
                 case 'FILE':
-                    sourceAddressHelp.textContent = '文件路径，例如: /data/metrics.json';
-                    sourceAddress.placeholder = '/data/metrics.json';
+                    document.getElementById('fileConfig').style.display = 'block';
                     break;
-                default:
-                    sourceAddressHelp.textContent = '请根据选择的数据源类型输入相应的地址';
-                    sourceAddress.placeholder = '输入数据源地址';
             }
         }
 
@@ -254,6 +436,48 @@
         function previewMetric() {
             const form = document.querySelector('form');
             const formData = new FormData(form);
+            const sourceType = formData.get('sourceType');
+            
+            let dataSourceInfo = '';
+            
+            // 根据数据源类型显示相应配置
+            switch(sourceType) {
+                case 'HTTP_API':
+                    dataSourceInfo = `
+                        <tr><td><strong>URL:</strong></td><td><code>${formData.get('httpUrl') || '未设置'}</code></td></tr>
+                        <tr><td><strong>方法:</strong></td><td><span class="badge bg-primary">${formData.get('httpMethod') || 'GET'}</span></td></tr>
+                        <tr><td><strong>请求头:</strong></td><td><code>${formData.get('httpHeaders') || '无'}</code></td></tr>
+                        <tr><td><strong>超时:</strong></td><td>${formData.get('httpTimeout') || '30000'}毫秒</td></tr>
+                    `;
+                    break;
+                case 'MQTT':
+                    dataSourceInfo = `
+                        <tr><td><strong>Broker:</strong></td><td><code>${formData.get('mqttBroker') || '未设置'}</code></td></tr>
+                        <tr><td><strong>端口:</strong></td><td>${formData.get('mqttPort') || '1883'}</td></tr>
+                        <tr><td><strong>Topic:</strong></td><td><code>${formData.get('mqttTopic') || '未设置'}</code></td></tr>
+                        <tr><td><strong>QoS:</strong></td><td><span class="badge bg-info">${formData.get('mqttQos') || '0'}</span></td></tr>
+                        <tr><td><strong>客户端ID:</strong></td><td>${formData.get('mqttClientId') || '自动生成'}</td></tr>
+                        <tr><td><strong>认证:</strong></td><td>${formData.get('mqttUsername') ? '已配置' : '无'}</td></tr>
+                    `;
+                    break;
+                case 'DATABASE':
+                    dataSourceInfo = `
+                        <tr><td><strong>连接字符串:</strong></td><td><code>${formData.get('dbConnectionString') || '未设置'}</code></td></tr>
+                        <tr><td><strong>用户名:</strong></td><td>${formData.get('dbUsername') || '未设置'}</td></tr>
+                        <tr><td><strong>密码:</strong></td><td>${formData.get('dbPassword') ? '***' : '未设置'}</td></tr>
+                        <tr><td><strong>查询语句:</strong></td><td><code>${formData.get('dbQuery') || '未设置'}</code></td></tr>
+                        <tr><td><strong>驱动:</strong></td><td><code>${formData.get('dbDriver') || '未设置'}</code></td></tr>
+                    `;
+                    break;
+                case 'FILE':
+                    dataSourceInfo = `
+                        <tr><td><strong>文件路径:</strong></td><td><code>${formData.get('filePath') || '未设置'}</code></td></tr>
+                        <tr><td><strong>格式:</strong></td><td><span class="badge bg-secondary">${formData.get('fileFormat') || 'CSV'}</span></td></tr>
+                        <tr><td><strong>编码:</strong></td><td>${formData.get('fileEncoding') || 'UTF-8'}</td></tr>
+                        <tr><td><strong>分隔符:</strong></td><td><code>${formData.get('fileDelimiter') || ','}</code></td></tr>
+                    `;
+                    break;
+            }
             
             let previewContent = `
                 <div class="row">
@@ -270,11 +494,11 @@
                     <div class="col-md-6">
                         <h6>数据源信息</h6>
                         <table class="table table-sm">
-                            <tr><td><strong>类型:</strong></td><td><span class="badge bg-info">${formData.get('sourceType')}</span></td></tr>
+                            <tr><td><strong>类型:</strong></td><td><span class="badge bg-info">${sourceType}</span></td></tr>
                             <tr><td><strong>名称:</strong></td><td>${formData.get('sourceName')}</td></tr>
-                            <tr><td><strong>地址:</strong></td><td><code>${formData.get('sourceAddress')}</code></td></tr>
                             <tr><td><strong>刷新间隔:</strong></td><td>${formData.get('refreshInterval')}秒</td></tr>
                             <tr><td><strong>状态:</strong></td><td><span class="badge ${formData.get('enabled') ? 'bg-success' : 'bg-danger'}">${formData.get('enabled') ? '启用' : '禁用'}</span></td></tr>
+                            ${dataSourceInfo}
                         </table>
                     </div>
                 </div>
@@ -299,9 +523,9 @@
             const unit = document.getElementById('unit').value;
             const sourceType = document.getElementById('sourceType').value;
             const sourceName = document.getElementById('sourceName').value;
-            const sourceAddress = document.getElementById('sourceAddress').value;
             
-            if (!identifier || !name || !category || !subCategory || !unit || !sourceType || !sourceName || !sourceAddress) {
+            // 基本字段验证
+            if (!identifier || !name || !category || !subCategory || !unit || !sourceType || !sourceName) {
                 e.preventDefault();
                 alert('请填写所有必填字段');
                 return;
@@ -312,6 +536,44 @@
                 e.preventDefault();
                 alert('指标标识符格式不正确，应为: 分类.子分类.指标名称');
                 return;
+            }
+            
+            // 根据数据源类型验证相应字段
+            switch(sourceType) {
+                case 'HTTP_API':
+                    const httpUrl = document.getElementById('httpUrl').value;
+                    if (!httpUrl) {
+                        e.preventDefault();
+                        alert('请填写HTTP API URL');
+                        return;
+                    }
+                    break;
+                case 'MQTT':
+                    const mqttBroker = document.getElementById('mqttBroker').value;
+                    const mqttTopic = document.getElementById('mqttTopic').value;
+                    if (!mqttBroker || !mqttTopic) {
+                        e.preventDefault();
+                        alert('请填写MQTT Broker地址和Topic');
+                        return;
+                    }
+                    break;
+                case 'DATABASE':
+                    const dbConnectionString = document.getElementById('dbConnectionString').value;
+                    const dbQuery = document.getElementById('dbQuery').value;
+                    if (!dbConnectionString || !dbQuery) {
+                        e.preventDefault();
+                        alert('请填写数据库连接字符串和查询语句');
+                        return;
+                    }
+                    break;
+                case 'FILE':
+                    const filePath = document.getElementById('filePath').value;
+                    if (!filePath) {
+                        e.preventDefault();
+                        alert('请填写文件路径');
+                        return;
+                    }
+                    break;
             }
         });
     </script>

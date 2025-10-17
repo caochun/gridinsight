@@ -24,7 +24,7 @@ public class DerivedMetricTest {
             "配变统计",
             "个",
             "配变总数",
-            DataSource.createHttpApi("http://api1.com", "API1", "描述1")
+            DataSource.createHttpApi("http://api1.com", "GET", null, "API1", "描述1", 300)
         );
         
         dependency2 = new BasicMetric(
@@ -33,7 +33,7 @@ public class DerivedMetricTest {
             "拓扑不一致",
             "个",
             "不一致数量",
-            DataSource.createHttpApi("http://api2.com", "API2", "描述2")
+            DataSource.createHttpApi("http://api2.com", "GET", null, "API2", "描述2", 300)
         );
         
         // 创建派生指标

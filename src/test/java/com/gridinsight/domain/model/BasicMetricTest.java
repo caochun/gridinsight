@@ -16,8 +16,11 @@ public class BasicMetricTest {
     void setUp() {
         dataSource = DataSource.createHttpApi(
             "https://api.example.com/metrics",
+            "GET",
+            null,
             "测试API",
-            "测试数据源"
+            "测试数据源",
+            300
         );
         
         basicMetric = new BasicMetric(

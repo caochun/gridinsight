@@ -107,12 +107,12 @@ public class EndToEndTest {
         // 创建已知值的测试数据
         BasicMetric total = new BasicMetric(
             "总数", "测试", "统计", "个", "总数",
-            DataSource.createHttpApi("http://test.com", "测试API", "测试")
+            DataSource.createHttpApi("http://test.com", "GET", null, "测试API", "测试", 300)
         );
         
         BasicMetric error = new BasicMetric(
             "错误数", "测试", "错误", "个", "错误数",
-            DataSource.createHttpApi("http://test.com", "测试API", "测试")
+            DataSource.createHttpApi("http://test.com", "GET", null, "测试API", "测试", 300)
         );
         
         DerivedMetric accuracy = new DerivedMetric(
