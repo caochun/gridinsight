@@ -70,7 +70,18 @@ public class MetricManagementController {
     @GetMapping("/derived/add")
     public String addDerivedMetricForm(Model model) {
         model.addAttribute("metric", new DerivedMetricForm());
-        model.addAttribute("availableMetrics", metricConfigService.getAllMetrics());
+        
+        // 创建简化的指标列表用于模板
+        List<Map<String, String>> availableMetrics = metricConfigService.getAllMetrics().entrySet().stream()
+                .map(entry -> {
+                    Map<String, String> metricInfo = new HashMap<>();
+                    metricInfo.put("identifier", entry.getKey());
+                    metricInfo.put("name", entry.getValue().getName());
+                    return metricInfo;
+                })
+                .collect(Collectors.toList());
+        model.addAttribute("availableMetrics", availableMetrics);
+        
         return "add-derived-metric";
     }
 
@@ -123,6 +134,8 @@ public class MetricManagementController {
         form.setUnit(metric.getUnit());
         form.setDescription(metric.getDescription());
         form.setFormula(metric.getFormula());
+        form.setUpdateStrategy(metric.getUpdateStrategy().name());
+        form.setCalculationInterval(metric.getCalculationInterval());
         
         List<String> dependencies = metric.getDependencies().stream()
                 .map(Metric::getIdentifier)
@@ -130,7 +143,18 @@ public class MetricManagementController {
         form.setDependencies(dependencies);
         
         model.addAttribute("metric", form);
-        model.addAttribute("availableMetrics", metricConfigService.getAllMetrics());
+        
+        // 创建简化的指标列表用于模板
+        List<Map<String, String>> availableMetrics = metricConfigService.getAllMetrics().entrySet().stream()
+                .map(entry -> {
+                    Map<String, String> metricInfo = new HashMap<>();
+                    metricInfo.put("identifier", entry.getKey());
+                    metricInfo.put("name", entry.getValue().getName());
+                    return metricInfo;
+                })
+                .collect(Collectors.toList());
+        model.addAttribute("availableMetrics", availableMetrics);
+        
         return "edit-derived-metric";
     }
 
@@ -180,6 +204,14 @@ public class MetricManagementController {
                     .filter(metric -> metric != null)
                     .collect(Collectors.toList());
 
+            // 解析更新策略
+            DerivedMetricUpdateStrategy updateStrategy;
+            try {
+                updateStrategy = DerivedMetricUpdateStrategy.valueOf(form.getUpdateStrategy());
+            } catch (Exception e) {
+                updateStrategy = DerivedMetricUpdateStrategy.REALTIME;
+            }
+
             // 创建派生指标
             DerivedMetric metric = new DerivedMetric(
                 form.getName(),
@@ -188,7 +220,9 @@ public class MetricManagementController {
                 form.getUnit(),
                 form.getDescription(),
                 form.getFormula(),
-                dependencies
+                dependencies,
+                updateStrategy,
+                form.getCalculationInterval()
             );
 
             // 保存指标
@@ -197,6 +231,82 @@ public class MetricManagementController {
             return "redirect:/admin/metrics/derived?success=派生指标保存成功";
         } catch (Exception e) {
             return "redirect:/admin/metrics/derived/add?error=" + e.getMessage();
+        }
+    }
+
+    /**
+     * 更新基础指标
+     */
+    @PostMapping("/basic/update")
+    public String updateBasicMetric(@ModelAttribute BasicMetricForm form) {
+        try {
+            // 创建数据源
+            DataSource dataSource = new DataSource(
+                DataSource.SourceType.valueOf(form.getSourceType()),
+                form.getSourceAddress(),
+                form.getSourceName(),
+                Integer.valueOf(form.getRefreshInterval()),
+                form.isEnabled()
+            );
+
+            // 创建基础指标
+            BasicMetric metric = new BasicMetric(
+                form.getName(),
+                form.getCategory(),
+                form.getSubCategory(),
+                form.getUnit(),
+                form.getDescription(),
+                dataSource
+            );
+
+            // 更新指标
+            metricConfigService.updateBasicMetric(form.getIdentifier(), metric);
+            
+            return "redirect:/admin/metrics/basic?success=基础指标更新成功";
+        } catch (Exception e) {
+            return "redirect:/admin/metrics/basic/edit/" + form.getIdentifier() + "?error=" + e.getMessage();
+        }
+    }
+
+    /**
+     * 更新派生指标
+     */
+    @PostMapping("/derived/update")
+    public String updateDerivedMetric(@ModelAttribute DerivedMetricForm form) {
+        try {
+            // 创建依赖指标列表
+            List<Metric> dependencies = form.getDependencies().stream()
+                    .map(metricConfigService::getMetric)
+                    .filter(metric -> metric != null)
+                    .collect(Collectors.toList());
+
+            // 解析更新策略
+            DerivedMetricUpdateStrategy updateStrategy;
+            try {
+                updateStrategy = DerivedMetricUpdateStrategy.valueOf(form.getUpdateStrategy());
+            } catch (Exception e) {
+                updateStrategy = DerivedMetricUpdateStrategy.REALTIME;
+            }
+
+            // 创建派生指标
+            DerivedMetric metric = new DerivedMetric(
+                form.getName(),
+                form.getCategory(),
+                form.getSubCategory(),
+                form.getUnit(),
+                form.getDescription(),
+                form.getFormula(),
+                dependencies,
+                updateStrategy,
+                form.getCalculationInterval()
+            );
+
+            // 更新指标
+            metricConfigService.updateDerivedMetric(form.getIdentifier(), metric);
+            
+            return "redirect:/admin/metrics/derived?success=派生指标更新成功";
+        } catch (Exception e) {
+            return "redirect:/admin/metrics/derived/edit/" + form.getIdentifier() + "?error=" + e.getMessage();
         }
     }
 
@@ -318,6 +428,8 @@ public class MetricManagementController {
         private String description;
         private String formula;
         private List<String> dependencies;
+        private String updateStrategy = "REALTIME";
+        private Integer calculationInterval = 300;
 
         // Getters and Setters
         public String getIdentifier() { return identifier; }
@@ -336,5 +448,9 @@ public class MetricManagementController {
         public void setFormula(String formula) { this.formula = formula; }
         public List<String> getDependencies() { return dependencies; }
         public void setDependencies(List<String> dependencies) { this.dependencies = dependencies; }
+        public String getUpdateStrategy() { return updateStrategy; }
+        public void setUpdateStrategy(String updateStrategy) { this.updateStrategy = updateStrategy; }
+        public Integer getCalculationInterval() { return calculationInterval; }
+        public void setCalculationInterval(Integer calculationInterval) { this.calculationInterval = calculationInterval; }
     }
 }

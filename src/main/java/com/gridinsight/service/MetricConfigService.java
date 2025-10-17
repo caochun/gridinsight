@@ -248,6 +248,27 @@ public class MetricConfigService {
     }
 
     /**
+     * 更新基础指标
+     */
+    public void updateBasicMetric(String identifier, BasicMetric metric) {
+        basicMetrics.put(identifier, metric);
+        if (metric.getDataSource() != null) {
+            dataSources.put(identifier, metric.getDataSource());
+        }
+        // 同步到计算服务
+        metricCalculationService.addMetric(metric);
+    }
+
+    /**
+     * 更新派生指标
+     */
+    public void updateDerivedMetric(String identifier, DerivedMetric metric) {
+        derivedMetrics.put(identifier, metric);
+        // 同步到计算服务
+        metricCalculationService.addMetric(metric);
+    }
+
+    /**
      * 删除指标
      */
     public boolean removeMetric(String identifier) {

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑派生指标 - GridInsight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+        .formula-editor {
+            font-family: 'Courier New', monospace;
+            min-height: 120px;
+        }
+        .dependency-select {
+            min-height: 120px;
+        }
+        .formula-help {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 0.25rem;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/admin/metrics">
+                <i class="bi bi-speedometer2"></i> GridInsight 指标管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/metrics">首页</a>
+                <a class="nav-link" href="/admin/metrics/basic">基础指标</a>
+                <a class="nav-link active" href="/admin/metrics/derived">派生指标</a>
+                <a class="nav-link" href="/api/metrics">API文档</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-pencil-square"></i> 编辑派生指标</h2>
+                    <a href="/admin/metrics/derived" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> 返回列表
+                    </a>
+                </div>
+
+                <!-- 错误提示 -->
+                <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span th:text="${param.error}">错误信息</span>
+                </div>
+
+                <!-- 表单 -->
+                <form th:action="@{/admin/metrics/derived/update}" th:object="${metric}" method="post">
+                    <!-- 基本信息 -->
+                    <div class="form-section">
+                        <h4><i class="bi bi-info-circle"></i> 基本信息</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="identifier" class="form-label required-field">指标标识符</label>
+                                    <input type="text" class="form-control" id="identifier" th:field="*{identifier}" readonly>
+                                    <div class="form-text">标识符不可修改</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label required-field">指标名称</label>
+                                    <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="category" class="form-label required-field">分类</label>
+                                    <input type="text" class="form-control" id="category" th:field="*{category}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subCategory" class="form-label required-field">子分类</label>
+                                    <input type="text" class="form-control" id="subCategory" th:field="*{subCategory}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="unit" class="form-label required-field">单位</label>
+                                    <input type="text" class="form-control" id="unit" th:field="*{unit}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">描述</label>
+                                    <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 计算公式 -->
+                    <div class="form-section">
+                        <h4><i class="bi bi-calculator"></i> 计算公式</h4>
+                        <div class="mb-3">
+                            <label for="formula" class="form-label required-field">计算公式</label>
+                            <textarea class="form-control formula-editor" id="formula" th:field="*{formula}" rows="4" required></textarea>
+                            <div class="form-text">使用指标标识符引用其他指标，支持基本运算和数学函数</div>
+                        </div>
+                        
+                        <!-- 公式帮助 -->
+                        <div class="formula-help">
+                            <h6><i class="bi bi-info-circle"></i> 公式语法说明</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>基本运算：</strong>
+                                    <ul class="mb-0">
+                                        <li>+ 加法</li>
+                                        <li>- 减法</li>
+                                        <li>* 乘法</li>
+                                        <li>/ 除法</li>
+                                        <li>() 括号优先级</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>数学函数：</strong>
+                                    <ul class="mb-0">
+                                        <li>sqrt(值) 平方根</li>
+                                        <li>abs(值) 绝对值</li>
+                                        <li>max(值1,值2) 最大值</li>
+                                        <li>min(值1,值2) 最小值</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <strong>示例：</strong>
+                                <code>(指标A + 指标B) * 0.5 + sqrt(指标C)</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 依赖关系 -->
+                    <div class="form-section">
+                        <h4><i class="bi bi-diagram-3"></i> 依赖关系</h4>
+                        <div class="mb-3">
+                            <label for="dependencies" class="form-label">依赖指标</label>
+                            <select class="form-select dependency-select" id="dependencies" th:field="*{dependencies}" multiple>
+                                <option th:each="metric : ${availableMetrics}" 
+                                        th:value="${metric.identifier}" 
+                                        th:text="${metric.identifier + ' - ' + metric.name}">指标选项</option>
+                            </select>
+                            <div class="form-text">按住Ctrl键可多选依赖指标</div>
+                        </div>
+                    </div>
+
+                    <!-- 更新策略 -->
+                    <div class="form-section">
+                        <h4><i class="bi bi-gear"></i> 更新策略</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="updateStrategy" class="form-label required-field">更新策略</label>
+                                    <select class="form-select" id="updateStrategy" th:field="*{updateStrategy}" required>
+                                        <option th:each="strategy : ${T(com.gridinsight.domain.model.DerivedMetricUpdateStrategy).values()}"
+                                                th:value="${strategy.name()}"
+                                                th:text="${strategy.getDisplayName()}">更新策略</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="calculationInterval" class="form-label">计算间隔 (秒)</label>
+                                    <input type="number" class="form-control" id="calculationInterval" th:field="*{calculationInterval}"
+                                           placeholder="仅对定时计算策略有效" min="1" step="1">
+                                    <div class="form-text">仅当更新策略为"定时计算"时有效，单位为秒。</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="/admin/metrics/derived" class="btn btn-secondary">取消</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> 更新指标
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const updateStrategySelect = document.getElementById('updateStrategy');
+            const calculationIntervalInput = document.getElementById('calculationInterval');
+
+            function toggleCalculationInterval() {
+                if (updateStrategySelect.value === 'SCHEDULED') {
+                    calculationIntervalInput.removeAttribute('disabled');
+                    calculationIntervalInput.setAttribute('required', 'required');
+                } else {
+                    calculationIntervalInput.setAttribute('disabled', 'disabled');
+                    calculationIntervalInput.removeAttribute('required');
+                    calculationIntervalInput.value = ''; // 清空值
+                }
+            }
+
+            updateStrategySelect.addEventListener('change', toggleCalculationInterval);
+            toggleCalculationInterval(); // 初始化状态
+        });
+    </script>
+</body>
+</html>
