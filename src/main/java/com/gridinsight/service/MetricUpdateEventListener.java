@@ -22,7 +22,7 @@ public class MetricUpdateEventListener {
     @EventListener
     @Async
     public void handleMetricUpdateEvent(MetricUpdateEvent event) {
-        System.out.println("📡 接收到指标更新事件: " + event);
+        // 接收到指标更新事件
         
         // 处理指标更新事件，触发依赖的派生指标更新
         eventDrivenUpdateService.handleMetricUpdateEvent(event);

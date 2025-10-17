@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * 事件驱动的指标更新服务
@@ -39,7 +38,7 @@ public class EventDrivenMetricUpdateService {
     /**
      * 应用启动时初始化依赖关系映射
      */
-    @jakarta.annotation.PostConstruct
+    @javax.annotation.PostConstruct
     public void init() {
         // 延迟初始化，确保所有指标都已加载
         new Thread(() -> {
@@ -74,9 +73,7 @@ public class EventDrivenMetricUpdateService {
             }
         }
         
-        System.out.println("=== 依赖关系映射初始化完成 ===");
-        dependencyMap.forEach((dep, dependents) -> 
-            System.out.println(dep + " -> " + dependents));
+        // 依赖关系映射初始化完成
     }
 
     /**
@@ -85,7 +82,7 @@ public class EventDrivenMetricUpdateService {
     public void publishMetricUpdateEvent(String metricIdentifier, Object metricValue, String eventSource) {
         Metric metric = metricConfigService.getMetric(metricIdentifier);
         if (metric == null) {
-            System.err.println("指标不存在: " + metricIdentifier);
+            // 指标不存在，跳过处理
             return;
         }
         
@@ -99,7 +96,7 @@ public class EventDrivenMetricUpdateService {
             eventSource
         );
         
-        System.out.println("发布指标更新事件: " + event);
+        // 发布指标更新事件
         eventPublisher.publishEvent(event);
     }
 
@@ -118,19 +115,18 @@ public class EventDrivenMetricUpdateService {
             Set<String> dependentMetrics = dependencyMap.get(metricIdentifier);
             
             if (dependentMetrics != null && !dependentMetrics.isEmpty()) {
-                System.out.println("指标 " + metricIdentifier + " 更新，触发依赖指标更新: " + dependentMetrics);
+                // 触发依赖指标更新
                 
                 // 异步更新所有依赖的派生指标
                 for (String dependentIdentifier : dependentMetrics) {
                     updateDerivedMetricIfNeeded(dependentIdentifier, event);
                 }
             } else {
-                System.out.println("指标 " + metricIdentifier + " 没有依赖的派生指标");
+                // 没有依赖的派生指标
             }
             
         } catch (Exception e) {
-            System.err.println("处理指标更新事件异常: " + e.getMessage());
-            e.printStackTrace();
+            // 处理指标更新事件异常，记录日志但不中断流程
         }
     }
 
@@ -149,11 +145,11 @@ public class EventDrivenMetricUpdateService {
             
             // 检查更新策略
             if (derivedMetric.getUpdateStrategy() != DerivedMetricUpdateStrategy.DEPENDENCY_DRIVEN) {
-                System.out.println("派生指标 " + derivedIdentifier + " 不使用依赖驱动策略，跳过");
+                // 派生指标不使用依赖驱动策略，跳过
                 return;
             }
             
-            System.out.println("开始更新派生指标: " + derivedIdentifier);
+            // 开始更新派生指标
             
             // 计算派生指标值
             MetricValue value = metricCalculationService.calculateMetric(derivedIdentifier);
@@ -165,14 +161,13 @@ public class EventDrivenMetricUpdateService {
                 // 发布派生指标更新事件，触发下一级依赖
                 publishMetricUpdateEvent(derivedIdentifier, value.getValue(), "DERIVED_UPDATE");
                 
-                System.out.println("派生指标更新成功: " + derivedIdentifier + " = " + value.getValue());
+                // 派生指标更新成功
             } else {
-                System.err.println("派生指标计算失败: " + derivedIdentifier + " - " + value.getDataSource());
+                // 派生指标计算失败
             }
             
         } catch (Exception e) {
-            System.err.println("派生指标更新异常: " + derivedIdentifier + " - " + e.getMessage());
-            e.printStackTrace();
+            // 派生指标更新异常，记录日志但不中断流程
         }
     }
 

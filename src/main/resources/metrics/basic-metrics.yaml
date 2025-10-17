@@ -71,12 +71,53 @@ basicMetrics:
     category: "测试"
     subCategory: "数据库"
     unit: "MW"
-    description: "从数据库获取的历史负荷数据"
+    description: "从SQLite数据库获取的历史负荷数据"
     dataSource:
       sourceType: "DATABASE"
-      sourceAddress: "jdbc:mysql://db.example.com:3306/power_db"
+      config:
+        connectionString: "jdbc:sqlite:data/test_metrics.db"
+        username: ""
+        password: ""
+        query: "SELECT AVG(load_value) FROM historical_load WHERE date >= datetime('now', '-1 day')"
+        driver: "org.sqlite.JDBC"
       sourceName: "负荷数据库"
       refreshInterval: 3600
+      enabled: true
+
+  "测试.数据库.配变总数":
+    name: "配变总数"
+    category: "测试"
+    subCategory: "数据库"
+    unit: "个"
+    description: "从SQLite数据库获取的配变总数"
+    dataSource:
+      sourceType: "DATABASE"
+      config:
+        connectionString: "jdbc:sqlite:data/test_metrics.db"
+        username: ""
+        password: ""
+        query: "SELECT COUNT(*) FROM transformers WHERE status = 'active'"
+        driver: "org.sqlite.JDBC"
+      sourceName: "配变数据库"
+      refreshInterval: 1800
+      enabled: true
+
+  "测试.数据库.用户总数":
+    name: "用户总数"
+    category: "测试"
+    subCategory: "数据库"
+    unit: "户"
+    description: "从SQLite数据库获取的用户总数"
+    dataSource:
+      sourceType: "DATABASE"
+      config:
+        connectionString: "jdbc:sqlite:data/test_metrics.db"
+        username: ""
+        password: ""
+        query: "SELECT COUNT(*) FROM users WHERE active = 1"
+        driver: "org.sqlite.JDBC"
+      sourceName: "用户数据库"
+      refreshInterval: 1800
       enabled: true
 
   "测试.文件.配置文件":

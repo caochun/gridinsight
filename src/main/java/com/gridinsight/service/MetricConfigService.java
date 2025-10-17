@@ -7,7 +7,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.constructor.Constructor;
 
-import jakarta.annotation.PostConstruct;
+import javax.annotation.PostConstruct;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,9 +34,7 @@ public class MetricConfigService {
         loadBasicMetrics();
         loadDerivedMetrics();
         syncToCalculationService();
-        System.out.println("=== 指标配置加载完成 ===");
-        System.out.println("基础指标数量: " + basicMetrics.size());
-        System.out.println("派生指标数量: " + derivedMetrics.size());
+        // 指标配置加载完成
     }
 
     /**
@@ -57,7 +55,7 @@ public class MetricConfigService {
                     .getResourceAsStream("metrics/basic-metrics.yaml");
             
             if (inputStream == null) {
-                System.out.println("警告: 未找到基础指标配置文件");
+                // 未找到基础指标配置文件
                 return;
             }
 
@@ -79,8 +77,7 @@ public class MetricConfigService {
 
             inputStream.close();
         } catch (Exception e) {
-            System.err.println("加载基础指标配置失败: " + e.getMessage());
-            e.printStackTrace();
+            // 加载基础指标配置失败
         }
     }
 
@@ -93,7 +90,7 @@ public class MetricConfigService {
                     .getResourceAsStream("metrics/derived-metrics.yaml");
             
             if (inputStream == null) {
-                System.out.println("警告: 未找到派生指标配置文件");
+                // 未找到派生指标配置文件
                 return;
             }
 
@@ -114,8 +111,7 @@ public class MetricConfigService {
 
             inputStream.close();
         } catch (Exception e) {
-            System.err.println("加载派生指标配置失败: " + e.getMessage());
-            e.printStackTrace();
+            // 加载派生指标配置失败
         }
     }
 
@@ -123,13 +119,23 @@ public class MetricConfigService {
      * 创建基础指标对象
      */
     private BasicMetric createBasicMetric(String identifier, BasicMetricConfig config) {
-        DataSource dataSource = new DataSource(
-            DataSource.SourceType.valueOf(config.getDataSource().getSourceType()),
-            config.getDataSource().getSourceAddress(),
-            config.getDataSource().getSourceName(),
-            config.getDataSource().getRefreshInterval(),
-            config.getDataSource().isEnabled()
-        );
+        DataSourceConfig dataSourceConfig = config.getDataSource();
+        DataSource.SourceType sourceType = DataSource.SourceType.valueOf(dataSourceConfig.getSourceType());
+        
+        DataSource dataSource;
+        if (dataSourceConfig.getConfig() != null && !dataSourceConfig.getConfig().isEmpty()) {
+            // 使用新的结构化配置
+            dataSource = new DataSource(sourceType, dataSourceConfig.getSourceName(), 
+                "从YAML配置加载", dataSourceConfig.getRefreshInterval(), dataSourceConfig.isEnabled());
+            dataSource.setConfig(dataSourceConfig.getConfig());
+        } else {
+            // 兼容旧的sourceAddress方式
+            dataSource = new DataSource(sourceType, dataSourceConfig.getSourceName(), 
+                "从YAML配置加载", dataSourceConfig.getRefreshInterval(), dataSourceConfig.isEnabled());
+            if (dataSourceConfig.getSourceAddress() != null) {
+                dataSource.setSourceAddress(dataSourceConfig.getSourceAddress());
+            }
+        }
 
         return new BasicMetric(
             config.getName(),
@@ -153,7 +159,7 @@ public class MetricConfigService {
             if (dependency != null) {
                 dependencies.add(dependency);
             } else {
-                System.out.println("警告: 未找到依赖指标: " + depIdentifier);
+                // 未找到依赖指标
             }
         }
 
@@ -162,7 +168,7 @@ public class MetricConfigService {
         try {
             updateStrategy = DerivedMetricUpdateStrategy.valueOf(config.getUpdateStrategy());
         } catch (Exception e) {
-            System.out.println("警告: 无效的更新策略 '" + config.getUpdateStrategy() + "', 使用默认策略 REALTIME");
+            // 无效的更新策略，使用默认策略
             updateStrategy = DerivedMetricUpdateStrategy.REALTIME;
         }
 
@@ -367,6 +373,7 @@ public class MetricConfigService {
         private String sourceName;
         private int refreshInterval;
         private boolean enabled;
+        private Map<String, Object> config;
 
         // Getters and Setters
         public String getSourceType() { return sourceType; }
@@ -379,6 +386,8 @@ public class MetricConfigService {
         public void setRefreshInterval(int refreshInterval) { this.refreshInterval = refreshInterval; }
         public boolean isEnabled() { return enabled; }
         public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        public Map<String, Object> getConfig() { return config; }
+        public void setConfig(Map<String, Object> config) { this.config = config; }
     }
 
     /**

@@ -46,7 +46,7 @@ public class MetricCalculationService {
         if (basicMetrics.containsKey(metricIdentifier)) {
             MetricValue metricValue = MetricValue.good(metricIdentifier, value, "个");
             valueCache.put(metricIdentifier, metricValue);
-            System.out.println("设置基础指标值: " + metricIdentifier + " = " + value);
+            // 设置基础指标值
         }
     }
 

@@ -23,14 +23,14 @@ public class TimeSeriesDataService {
     public void storeMetricValue(String metricIdentifier, MetricValue value, LocalDateTime timestamp) {
         // TODO: 实现时序数据库存储逻辑
         // 可以使用 InfluxDB, TimescaleDB, ClickHouse 等
-        System.out.println("存储指标值: " + metricIdentifier + " = " + value.getValue() + " @ " + timestamp);
+        // 存储指标值
     }
 
     /**
      * 清空所有时序数据 (仅用于测试)
      */
     public void clearAllData() {
-        System.out.println("清空所有时序数据");
+        // 清空所有时序数据
     }
 
     /**
@@ -51,7 +51,7 @@ public class TimeSeriesDataService {
      */
     public MetricValue getLatestMetricValue(String metricIdentifier) {
         // TODO: 从时序数据库查询最新值
-        System.out.println("查询最新指标值: " + metricIdentifier);
+        // 查询最新指标值
         return MetricValue.good(metricIdentifier, 0.0, "");
     }
 
@@ -64,7 +64,7 @@ public class TimeSeriesDataService {
      */
     public List<MetricValue> getMetricHistory(String metricIdentifier, LocalDateTime startTime, LocalDateTime endTime) {
         // TODO: 从时序数据库查询历史数据
-        System.out.println("查询历史数据: " + metricIdentifier + " [" + startTime + " - " + endTime + "]");
+        // 查询历史数据
         return List.of();
     }
 
@@ -75,7 +75,7 @@ public class TimeSeriesDataService {
      */
     public Map<String, MetricValue> getLatestMetricValues(List<String> metricIdentifiers) {
         // TODO: 批量查询最新值
-        System.out.println("批量查询指标值: " + metricIdentifiers);
+        // 批量查询指标值
         return Map.of();
     }
 
@@ -87,7 +87,7 @@ public class TimeSeriesDataService {
      */
     public Map<String, Object> getMetricStatistics(String metricIdentifier, String timeRange) {
         // TODO: 计算统计信息
-        System.out.println("获取统计信息: " + metricIdentifier + " 范围: " + timeRange);
+        // 获取统计信息
         return Map.of();
     }
 }

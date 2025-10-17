@@ -4,6 +4,10 @@ import com.gridinsight.domain.model.DataSource;
 import com.gridinsight.domain.model.MetricValue;
 import org.springframework.stereotype.Service;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -100,10 +104,33 @@ public class DataSourceService {
      * 从数据库获取数据
      */
     private MetricValue fetchFromDatabase(DataSource dataSource) {
-        // 模拟数据库查询
         try {
-            Double value = generateMockValue(dataSource);
-            return MetricValue.good("", value, "");
+            String connectionString = dataSource.getConfig("connectionString", String.class);
+            String username = dataSource.getConfig("username", String.class);
+            String password = dataSource.getConfig("password", String.class);
+            String query = dataSource.getConfig("query", String.class);
+            String driver = dataSource.getConfig("driver", String.class);
+            
+            if (connectionString == null || query == null) {
+                return MetricValue.error("", "数据库配置不完整");
+            }
+            
+            // 加载数据库驱动
+            if (driver != null) {
+                Class.forName(driver);
+            }
+            
+            try (Connection conn = DriverManager.getConnection(connectionString, username, password);
+                 PreparedStatement stmt = conn.prepareStatement(query);
+                 ResultSet rs = stmt.executeQuery()) {
+                
+                if (rs.next()) {
+                    Double value = rs.getDouble(1);
+                    return MetricValue.good("", value, "");
+                } else {
+                    return MetricValue.error("", "数据库查询无结果");
+                }
+            }
         } catch (Exception e) {
             return MetricValue.error("", "数据库查询失败: " + e.getMessage());
         }

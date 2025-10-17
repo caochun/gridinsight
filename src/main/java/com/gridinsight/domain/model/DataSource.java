@@ -202,9 +202,35 @@ public class DataSource {
     @SuppressWarnings("unchecked")
     public <T> T getConfig(String key, Class<T> type) {
         Object value = this.config.get(key);
-        if (value != null && type.isAssignableFrom(value.getClass())) {
+        if (value == null) {
+            return null;
+        }
+        
+        // 直接类型匹配
+        if (type.isAssignableFrom(value.getClass())) {
             return (T) value;
         }
+        
+        // 尝试字符串转换
+        if (type == String.class && value instanceof String) {
+            return (T) value;
+        }
+        
+        // 尝试数字转换
+        if (type == Integer.class) {
+            if (value instanceof Integer) {
+                return (T) value;
+            } else if (value instanceof Number) {
+                return (T) Integer.valueOf(((Number) value).intValue());
+            } else if (value instanceof String) {
+                try {
+                    return (T) Integer.valueOf((String) value);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+        
         return null;
     }
     

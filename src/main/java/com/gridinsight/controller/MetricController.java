@@ -29,7 +29,7 @@ public class MetricController {
     public ResponseEntity<Map<String, Object>> queryMetric(
             @RequestParam String identifier) {
         
-        System.out.println("收到查询请求: " + identifier);
+        // 收到查询请求
         try {
             MetricValue response = metricCalculationService.calculateMetric(identifier);
             

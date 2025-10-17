@@ -2,8 +2,8 @@
 
 面向电力行业的指标（Metric）管理与计算平台。支持基础指标从外部数据源采集，派生指标通过公式计算生成，提供事件驱动与定时计算两类更新策略，内置 Web 管理界面与 REST API，并预留接入时序数据库能力。
 
-- Java 17+
-- Spring Boot 3.4.5
+- Java 11+
+- Spring Boot 2.7.18
 - 端口：9000（server.port=9000）
 
 ## 核心概念
@@ -19,7 +19,7 @@
 - **数据源**：支持多种采集方式
   - HTTP_API：通过REST API获取数据
   - MQTT：订阅消息队列主题
-  - DATABASE：从关系型数据库查询
+  - DATABASE：从关系型数据库查询（支持SQLite等）
   - FILE：从文件系统读取
 - **更新机制**：根据 `refreshInterval`（刷新间隔）定时从数据源拉取最新值
 - **存储**：采集到的值存储到时序数据库中，支持历史查询
@@ -47,9 +47,8 @@
 ### DataSource（数据源）
 - **配置**：定义外部数据源的连接参数和采集策略
 - **类型**：支持HTTP、MQTT、数据库、文件等多种数据源
-- **地址**：数据源的具体访问地址或连接信息
+- **配置方式**：使用Map<String, Object>存储灵活配置，支持连接字符串、查询语句等
 - **启用状态**：可动态启用/禁用数据源，便于运维管理
-
 
 ## 架构与模块
 
@@ -71,14 +70,14 @@
 ## 启动与访问
 
 ```bash
-mvn clean package -DskipTests
+mvn clean compile
 mvn spring-boot:run
 ```
 
 - 管理入口：`http://localhost:9000/admin/metrics`
   - 基础指标：`/admin/metrics/basic`
   - 派生指标：`/admin/metrics/derived`
-- API 文档页：`http://localhost:9000/api/metrics`（在线试调；友好展示“实时值/指标定义”）
+- API 文档页：`http://localhost:9000/api/metrics`（在线试调；友好展示"实时值/指标定义"）
 
 ## 指标配置（YAML）
 
@@ -152,12 +151,15 @@ src/main/java/com/gridinsight/
   │   ├─ model/ (Metric, BasicMetric, DerivedMetric, MetricValue ...)
   │   └─ service/ (MetricCalculationService, FormulaEngine, FormulaParser)
   ├─ service/ (MetricConfigService, MetricSchedulerService, EventDriven*, DataSourceService, TimeSeriesDataService)
-  └─ controller/ (MetricController, MetricManagementController, ApiDocController)
+  ├─ controller/ (MetricController, MetricManagementController, ApiDocController)
+  └─ util/ (ExceptionHandler)
 src/main/resources/
   ├─ metrics/
   │   ├─ basic-metrics.yaml
   │   └─ derived-metrics.yaml
   └─ templates/ (Web UI 页面，含 api-doc.html)
+data/
+  └─ test_metrics.db (SQLite测试数据库)
 ```
 
 ## 已知限制与规划
@@ -165,6 +167,15 @@ src/main/resources/
 - 公式函数有限（sqrt/abs/max/min），可扩展
 - 时序库为内存占位，建议切到真实 TSDB
 - Web UI 规划：调度/事件监控、时序曲线可视化、定义导入导出、审计与权限
+
+## 最新更新
+
+- 代码清理：移除所有调试输出，优化异常处理
+- 统一异常处理：新增 `ExceptionHandler` 工具类
+- 数据源重构：支持灵活配置，包括数据库连接字符串和查询语句
+- SQLite集成：支持从SQLite数据库采集指标数据
+- Web UI完善：基础指标和派生指标的编辑功能
+- Spring Boot降级：从3.4.5降级到2.7.18以提高兼容性
 
 ---
 快速验证：

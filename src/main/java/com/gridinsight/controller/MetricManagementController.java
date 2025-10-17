@@ -88,81 +88,107 @@ public class MetricManagementController {
     /**
      * 编辑基础指标页面
      */
-    @GetMapping("/basic/edit/{identifier}")
+    @GetMapping("/basic/edit/{identifier:.+}")
     public String editBasicMetricForm(@PathVariable String identifier, Model model) {
-        BasicMetric metric = metricConfigService.getBasicMetric(identifier);
-        if (metric == null) {
-            return "redirect:/admin/metrics/basic?error=指标不存在";
-        }
-        
-        BasicMetricForm form = new BasicMetricForm();
-        form.setIdentifier(identifier);
-        form.setName(metric.getName());
-        form.setCategory(metric.getCategory());
-        form.setSubCategory(metric.getSubCategory());
-        form.setUnit(metric.getUnit());
-        form.setDescription(metric.getDescription());
-        
-        if (metric.getDataSource() != null) {
-            DataSource dataSource = metric.getDataSource();
-            form.setSourceType(dataSource.getSourceType().name());
-            form.setSourceName(dataSource.getSourceName());
-            form.setRefreshInterval(dataSource.getRefreshInterval());
-            form.setEnabled(dataSource.getEnabled());
-            
-            // 根据数据源类型填充相应配置
-            switch (dataSource.getSourceType()) {
-                case HTTP_API:
-                    form.setHttpUrl(dataSource.getConfig("url", String.class));
-                    form.setHttpMethod(dataSource.getConfig("method", String.class));
-                    form.setHttpHeaders(dataSource.getConfig("headers", String.class));
-                    form.setHttpTimeout(dataSource.getConfig("timeout", Integer.class) != null ? 
-                        dataSource.getConfig("timeout", Integer.class) : 30000);
-                    break;
-                case MQTT:
-                    form.setMqttBroker(dataSource.getConfig("broker", String.class));
-                    form.setMqttPort(dataSource.getConfig("port", Integer.class) != null ? 
-                        dataSource.getConfig("port", Integer.class) : 1883);
-                    form.setMqttTopic(dataSource.getConfig("topic", String.class));
-                    form.setMqttQos(dataSource.getConfig("qos", Integer.class) != null ? 
-                        dataSource.getConfig("qos", Integer.class) : 0);
-                    form.setMqttClientId(dataSource.getConfig("clientId", String.class));
-                    form.setMqttUsername(dataSource.getConfig("username", String.class));
-                    form.setMqttPassword(dataSource.getConfig("password", String.class));
-                    break;
-                case DATABASE:
-                    form.setDbConnectionString(dataSource.getConfig("connectionString", String.class));
-                    form.setDbUsername(dataSource.getConfig("username", String.class));
-                    form.setDbPassword(dataSource.getConfig("password", String.class));
-                    form.setDbQuery(dataSource.getConfig("query", String.class));
-                    form.setDbDriver(dataSource.getConfig("driver", String.class));
-                    break;
-                case FILE:
-                    form.setFilePath(dataSource.getConfig("filePath", String.class));
-                    form.setFileEncoding(dataSource.getConfig("encoding", String.class));
-                    form.setFileFormat(dataSource.getConfig("format", String.class));
-                    form.setFileDelimiter(dataSource.getConfig("delimiter", String.class));
-                    break;
+        try {
+            BasicMetric metric = metricConfigService.getBasicMetric(identifier);
+            if (metric == null) {
+                return "redirect:/admin/metrics/basic?error=指标不存在";
             }
-            
-            // 设置兼容性字段
-            form.setSourceAddress(dataSource.getSourceAddress());
+
+            BasicMetricForm form = new BasicMetricForm();
+            form.setIdentifier(identifier);
+            form.setName(metric.getName());
+            form.setCategory(metric.getCategory());
+            form.setSubCategory(metric.getSubCategory());
+            form.setUnit(metric.getUnit());
+            form.setDescription(metric.getDescription());
+
+            if (metric.getDataSource() != null) {
+                DataSource dataSource = metric.getDataSource();
+                form.setSourceType(dataSource.getSourceType().name());
+                form.setSourceName(dataSource.getSourceName());
+                form.setRefreshInterval(dataSource.getRefreshInterval());
+                form.setEnabled(dataSource.getEnabled());
+
+                // 根据数据源类型填充相应配置
+                switch (dataSource.getSourceType()) {
+                    case HTTP_API:
+                        String url = dataSource.getConfig("url", String.class);
+                        String method = dataSource.getConfig("method", String.class);
+                        String headers = dataSource.getConfig("headers", String.class);
+                        Integer timeout = dataSource.getConfig("timeout", Integer.class);
+
+                        form.setHttpUrl(url != null ? url : "");
+                        form.setHttpMethod(method != null ? method : "GET");
+                        form.setHttpHeaders(headers != null ? headers : "");
+                        form.setHttpTimeout(timeout != null ? timeout : 30000);
+                        break;
+                    case MQTT:
+                        String broker = dataSource.getConfig("broker", String.class);
+                        Integer port = dataSource.getConfig("port", Integer.class);
+                        String topic = dataSource.getConfig("topic", String.class);
+                        Integer qos = dataSource.getConfig("qos", Integer.class);
+                        String clientId = dataSource.getConfig("clientId", String.class);
+                        String mqttUsername = dataSource.getConfig("username", String.class);
+                        String mqttPassword = dataSource.getConfig("password", String.class);
+
+                        form.setMqttBroker(broker != null ? broker : "");
+                        form.setMqttPort(port != null ? port : 1883);
+                        form.setMqttTopic(topic != null ? topic : "");
+                        form.setMqttQos(qos != null ? qos : 0);
+                        form.setMqttClientId(clientId != null ? clientId : "");
+                        form.setMqttUsername(mqttUsername != null ? mqttUsername : "");
+                        form.setMqttPassword(mqttPassword != null ? mqttPassword : "");
+                        break;
+                    case DATABASE:
+                        String connectionString = dataSource.getConfig("connectionString", String.class);
+                        String username = dataSource.getConfig("username", String.class);
+                        String password = dataSource.getConfig("password", String.class);
+                        String query = dataSource.getConfig("query", String.class);
+                        String driver = dataSource.getConfig("driver", String.class);
+
+                        form.setDbConnectionString(connectionString != null ? connectionString : "");
+                        form.setDbUsername(username != null ? username : "");
+                        form.setDbPassword(password != null ? password : "");
+                        form.setDbQuery(query != null ? query : "");
+                        form.setDbDriver(driver != null ? driver : "");
+                        break;
+                    case FILE:
+                        String filePath = dataSource.getConfig("filePath", String.class);
+                        String encoding = dataSource.getConfig("encoding", String.class);
+                        String format = dataSource.getConfig("format", String.class);
+                        String delimiter = dataSource.getConfig("delimiter", String.class);
+
+                        form.setFilePath(filePath != null ? filePath : "");
+                        form.setFileEncoding(encoding != null ? encoding : "UTF-8");
+                        form.setFileFormat(format != null ? format : "CSV");
+                        form.setFileDelimiter(delimiter != null ? delimiter : ",");
+                        break;
+                }
+
+                // 设置兼容性字段
+                form.setSourceAddress(dataSource.getSourceAddress());
+            }
+
+            model.addAttribute("metric", form);
+            model.addAttribute("dataSourceTypes", DataSource.SourceType.values());
+            return "edit-basic-metric";
+        } catch (Exception e) {
+            return "redirect:/admin/metrics/basic?error=编辑失败: " + e.getMessage();
         }
-        
-        model.addAttribute("metric", form);
-        model.addAttribute("dataSourceTypes", DataSource.SourceType.values());
-        return "edit-basic-metric";
     }
 
     /**
      * 编辑派生指标页面
      */
-    @GetMapping("/derived/edit/{identifier}")
+    @GetMapping("/derived/edit/{identifier:.+}")
     public String editDerivedMetricForm(@PathVariable String identifier, Model model) {
-        DerivedMetric metric = metricConfigService.getDerivedMetric(identifier);
-        if (metric == null) {
-            return "redirect:/admin/metrics/derived?error=指标不存在";
-        }
+        try {
+            DerivedMetric metric = metricConfigService.getDerivedMetric(identifier);
+            if (metric == null) {
+                return "redirect:/admin/metrics/derived?error=指标不存在";
+            }
         
         DerivedMetricForm form = new DerivedMetricForm();
         form.setIdentifier(identifier);
@@ -191,9 +217,12 @@ public class MetricManagementController {
                     return metricInfo;
                 })
                 .collect(Collectors.toList());
-        model.addAttribute("availableMetrics", availableMetrics);
-        
-        return "edit-derived-metric";
+            model.addAttribute("availableMetrics", availableMetrics);
+            
+            return "edit-derived-metric";
+        } catch (Exception e) {
+            return "redirect:/admin/metrics/derived?error=编辑失败: " + e.getMessage();
+        }
     }
 
     /**
@@ -218,9 +247,9 @@ public class MetricManagementController {
             // 保存指标
             metricConfigService.addBasicMetric(form.getIdentifier(), metric);
             
-            return "redirect:/admin/metrics/basic?success=基础指标保存成功";
+            return handleSuccess("/admin/metrics/basic", "基础指标保存成功");
         } catch (Exception e) {
-            return "redirect:/admin/metrics/basic/add?error=" + e.getMessage();
+            return handleException(e, "/admin/metrics/basic", "/admin/metrics/basic/add");
         }
     }
 
@@ -260,9 +289,9 @@ public class MetricManagementController {
             // 保存指标
             metricConfigService.addDerivedMetric(form.getIdentifier(), metric);
             
-            return "redirect:/admin/metrics/derived?success=派生指标保存成功";
+            return handleSuccess("/admin/metrics/derived", "派生指标保存成功");
         } catch (Exception e) {
-            return "redirect:/admin/metrics/derived/add?error=" + e.getMessage();
+            return handleException(e, "/admin/metrics/derived", "/admin/metrics/derived/add");
         }
     }
 
@@ -288,9 +317,9 @@ public class MetricManagementController {
             // 更新指标
             metricConfigService.updateBasicMetric(form.getIdentifier(), metric);
             
-            return "redirect:/admin/metrics/basic?success=基础指标更新成功";
+            return handleSuccess("/admin/metrics/basic", "基础指标更新成功");
         } catch (Exception e) {
-            return "redirect:/admin/metrics/basic/edit/" + form.getIdentifier() + "?error=" + e.getMessage();
+            return handleException(e, "/admin/metrics/basic", "/admin/metrics/basic/edit/" + form.getIdentifier());
         }
     }
 
@@ -330,9 +359,9 @@ public class MetricManagementController {
             // 更新指标
             metricConfigService.updateDerivedMetric(form.getIdentifier(), metric);
             
-            return "redirect:/admin/metrics/derived?success=派生指标更新成功";
+            return handleSuccess("/admin/metrics/derived", "派生指标更新成功");
         } catch (Exception e) {
-            return "redirect:/admin/metrics/derived/edit/" + form.getIdentifier() + "?error=" + e.getMessage();
+            return handleException(e, "/admin/metrics/derived", "/admin/metrics/derived/edit/" + form.getIdentifier());
         }
     }
 
@@ -466,6 +495,26 @@ public class MetricManagementController {
             default:
                 throw new IllegalArgumentException("不支持的数据源类型: " + sourceType);
         }
+    }
+
+    // ========== 工具方法 ==========
+    
+    /**
+     * 处理异常并返回重定向URL
+     */
+    private String handleException(Exception e, String successUrl, String errorUrl) {
+        if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+            return "redirect:" + errorUrl + "?error=" + e.getMessage();
+        } else {
+            return "redirect:" + errorUrl + "?error=操作失败";
+        }
+    }
+    
+    /**
+     * 处理成功并返回重定向URL
+     */
+    private String handleSuccess(String successUrl, String message) {
+        return "redirect:" + successUrl + "?success=" + message;
     }
 
     // ========== 表单类定义 ==========
