@@ -50,8 +50,6 @@ public class MetricSchedulerService {
         // 获取所有基础指标
         Map<String, BasicMetric> basicMetrics = metricConfigService.getAllBasicMetrics();
         
-        // 调试日志：显示调度器正在运行
-        System.out.println("调度器运行中，当前时间: " + now + ", 基础指标数量: " + basicMetrics.size());
         
         for (Map.Entry<String, BasicMetric> entry : basicMetrics.entrySet()) {
             String identifier = entry.getKey();
@@ -77,18 +75,8 @@ public class MetricSchedulerService {
         // 🎯 改进：派生指标现在通过事件驱动自动更新，这里只处理定时计算策略
         Map<String, DerivedMetric> derivedMetrics = metricConfigService.getAllDerivedMetrics();
         
-        for (Map.Entry<String, DerivedMetric> entry : derivedMetrics.entrySet()) {
-            String identifier = entry.getKey();
-            DerivedMetric metric = entry.getValue();
-            
-            // 只处理定时计算策略，依赖驱动策略通过事件自动处理
-            if (metric.getUpdateStrategy() == DerivedMetricUpdateStrategy.SCHEDULED) {
-                if (shouldUpdateMetric(identifier, metric.getCalculationInterval(), now)) {
-                    updateDerivedMetricAsync(identifier, metric);
-                }
-            }
-            // REALTIME 和 DEPENDENCY_DRIVEN 策略不需要在这里处理
-        }
+        // 派生指标现在都使用事件驱动机制，不再需要定时调度
+        // 所有派生指标都会在依赖的基础指标值变化时自动重新计算
     }
 
     /**

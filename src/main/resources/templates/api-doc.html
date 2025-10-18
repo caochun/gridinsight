@@ -558,10 +558,7 @@ function renderMetricsList(data) {
 
 // 图表相关函数
 function loadHistoryData(timeRange) {
-  console.log('loadHistoryData被调用，timeRange:', timeRange, 'currentMetricId:', currentMetricId);
-  
   if (!currentMetricId) {
-    console.log('currentMetricId为空，无法加载历史数据');
     alert('请先查询一个指标');
     return;
   }
@@ -620,20 +617,14 @@ function queryHistoryWithIdentifier(identifier, startTime, endTime) {
     params.append('metric', identifier);
   }
   
-  console.log('查询历史数据:', identifier, startTime.toISOString(), endTime.toISOString());
-  console.log('请求URL:', '/api/timeseries/history?' + params.toString());
-  
   fetch('/api/timeseries/history?' + params.toString())
     .then(response => response.json())
     .then(data => {
-      console.log('历史数据查询响应:', data);
       document.getElementById('chart-loading').style.display = 'none';
       
       if (data.success && data.data && data.data.length > 0) {
-        console.log('数据查询成功，开始渲染图表，数据条数:', data.data.length);
         renderChart(data.data);
       } else {
-        console.log('数据查询失败或无数据:', data);
         document.getElementById('chart-error').style.display = 'block';
         document.getElementById('chart-error').innerHTML = '<i class="bi bi-exclamation-triangle"></i> 没有找到历史数据';
       }
@@ -647,9 +638,6 @@ function queryHistoryWithIdentifier(identifier, startTime, endTime) {
 }
 
 function renderChart(data) {
-  console.log('renderChart被调用，数据长度:', data.length);
-  console.log('前3条数据:', data.slice(0, 3));
-  
   const ctx = document.getElementById('metricChart').getContext('2d');
   
   // 销毁现有图表
@@ -670,13 +658,7 @@ function renderChart(data) {
   
   const values = data.map(item => parseFloat(item.value) || 0);
   
-  console.log('处理后的标签数量:', labels.length);
-  console.log('处理后的值数量:', values.length);
-  console.log('前3个标签:', labels.slice(0, 3));
-  console.log('前3个值:', values.slice(0, 3));
-  
   // 创建图表
-  console.log('开始创建Chart.js图表...');
   metricChart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -720,26 +702,15 @@ function renderChart(data) {
       }
     }
   });
-  
-  console.log('图表创建完成，metricChart:', metricChart);
-  console.log('图表是否有效:', metricChart && typeof metricChart.update === 'function');
-  
-  // 检查canvas元素
-  const canvas = document.getElementById('metricChart');
-  console.log('Canvas元素:', canvas);
-  console.log('Canvas尺寸:', canvas ? canvas.width + 'x' + canvas.height : 'N/A');
 }
 
 // 当切换到历史值tab时，自动加载24小时数据
 document.addEventListener('DOMContentLoaded', function() {
   const historyTab = document.getElementById('history-tab');
   historyTab.addEventListener('shown.bs.tab', function() {
-    console.log('历史值tab被点击，currentMetricId:', currentMetricId);
     if (currentMetricId) {
-      console.log('开始加载历史数据...');
       loadHistoryData('24h');
     } else {
-      console.log('currentMetricId为空，无法加载历史数据');
       document.getElementById('chart-error').style.display = 'block';
       document.getElementById('chart-error').innerHTML = '<i class="bi bi-exclamation-triangle"></i> 请先查询一个指标';
     }

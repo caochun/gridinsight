@@ -23,15 +23,7 @@ public class DerivedMetric extends Metric {
      */
     private List<Metric> dependencies;
     
-    /**
-     * 更新策略
-     */
-    private DerivedMetricUpdateStrategy updateStrategy = DerivedMetricUpdateStrategy.REALTIME;
-    
-    /**
-     * 计算间隔（秒）- 仅在定时计算策略下使用
-     */
-    private Integer calculationInterval = 300; // 默认5分钟
+    // 注意：updateStrategy和calculationInterval已移除，所有派生指标现在都使用事件驱动机制
     
     /**
      * 公式是否有效
@@ -67,30 +59,6 @@ public class DerivedMetric extends Metric {
         this.validFormula = validateFormula();
     }
     
-    /**
-     * 完整构造函数
-     * @param name 指标名称
-     * @param category 分类
-     * @param subCategory 子分类
-     * @param unit 单位
-     * @param description 描述
-     * @param formula 计算公式
-     * @param dependencies 依赖的指标列表
-     * @param updateStrategy 更新策略
-     * @param calculationInterval 计算间隔
-     */
-    public DerivedMetric(String name, String category, String subCategory, 
-                        String unit, String description, String formula, 
-                        List<Metric> dependencies, DerivedMetricUpdateStrategy updateStrategy, 
-                        Integer calculationInterval) {
-        super(name, category, subCategory, unit, description);
-        this.formula = formula;
-        this.dependencies = dependencies != null ? new ArrayList<>(dependencies) : new ArrayList<>();
-        this.updateStrategy = updateStrategy != null ? updateStrategy : DerivedMetricUpdateStrategy.REALTIME;
-        this.calculationInterval = calculationInterval != null ? calculationInterval : 300;
-        this.setMetricType(MetricType.DERIVED);
-        this.validFormula = validateFormula();
-    }
     
     /**
      * 添加依赖指标
@@ -208,21 +176,7 @@ public class DerivedMetric extends Metric {
         this.validFormula = validFormula;
     }
     
-    public DerivedMetricUpdateStrategy getUpdateStrategy() {
-        return updateStrategy;
-    }
-    
-    public void setUpdateStrategy(DerivedMetricUpdateStrategy updateStrategy) {
-        this.updateStrategy = updateStrategy;
-    }
-    
-    public Integer getCalculationInterval() {
-        return calculationInterval;
-    }
-    
-    public void setCalculationInterval(Integer calculationInterval) {
-        this.calculationInterval = calculationInterval;
-    }
+    // updateStrategy和calculationInterval的getter/setter方法已移除，因为现在所有派生指标都使用事件驱动机制
     
     @Override
     public String toString() {

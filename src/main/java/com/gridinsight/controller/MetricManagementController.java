@@ -198,8 +198,7 @@ public class MetricManagementController {
         form.setUnit(metric.getUnit());
         form.setDescription(metric.getDescription());
         form.setFormula(metric.getFormula());
-        form.setUpdateStrategy(metric.getUpdateStrategy().name());
-        form.setCalculationInterval(metric.getCalculationInterval());
+        // updateStrategy和calculationInterval已移除，所有派生指标现在都使用事件驱动机制
         
         List<String> dependencies = metric.getDependencies().stream()
                 .map(Metric::getIdentifier)
@@ -281,9 +280,7 @@ public class MetricManagementController {
                 form.getUnit(),
                 form.getDescription(),
                 form.getFormula(),
-                dependencies,
-                updateStrategy,
-                form.getCalculationInterval()
+                dependencies
             );
 
             // 保存指标
@@ -351,9 +348,7 @@ public class MetricManagementController {
                 form.getUnit(),
                 form.getDescription(),
                 form.getFormula(),
-                dependencies,
-                updateStrategy,
-                form.getCalculationInterval()
+                dependencies
             );
 
             // 更新指标

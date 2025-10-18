@@ -175,15 +175,7 @@ public class MetricConfigService {
             }
         }
 
-        // 解析更新策略
-        DerivedMetricUpdateStrategy updateStrategy;
-        try {
-            updateStrategy = DerivedMetricUpdateStrategy.valueOf(config.getUpdateStrategy());
-        } catch (Exception e) {
-            // 无效的更新策略，使用默认策略
-            updateStrategy = DerivedMetricUpdateStrategy.REALTIME;
-        }
-
+        // 使用事件驱动策略（不再需要updateStrategy和calculationInterval）
         DerivedMetric metric = new DerivedMetric(
             config.getName(),
             config.getCategory(),
@@ -191,9 +183,7 @@ public class MetricConfigService {
             config.getUnit(),
             config.getDescription(),
             config.getFormula(),
-            dependencies,
-            updateStrategy,
-            config.getCalculationInterval()
+            dependencies
         );
         
         // 设置UUID（如果配置中有的话）

@@ -50,12 +50,11 @@ public class ScheduledMetricUpdateTest {
         DerivedMetric scheduledMetric = metricConfigService.getAllDerivedMetrics().get(scheduledMetricId);
 
         assertThat(scheduledMetric).isNotNull();
-        assertThat(scheduledMetric.getUpdateStrategy()).isEqualTo(DerivedMetricUpdateStrategy.SCHEDULED);
-        assertThat(scheduledMetric.getCalculationInterval()).isEqualTo(900); // 15分钟
+        // 注意：updateStrategy和calculationInterval已移除，所有派生指标现在都使用事件驱动机制
+        assertThat(scheduledMetric).isNotNull();
 
         System.out.println("1. 测试指标: " + scheduledMetricId);
-        System.out.println("   更新策略: " + scheduledMetric.getUpdateStrategy());
-        System.out.println("   计算间隔: " + scheduledMetric.getCalculationInterval() + "秒");
+        System.out.println("   现在所有派生指标都使用事件驱动机制");
 
         // 2. 设置依赖指标的值（模拟基础数据）
         setupDependencyValues();
@@ -94,19 +93,18 @@ public class ScheduledMetricUpdateTest {
         // 获取所有SCHEDULED策略的指标
         Map<String, DerivedMetric> derivedMetrics = metricConfigService.getAllDerivedMetrics();
         
-        int scheduledCount = 0;
+        int derivedCount = 0;
         for (Map.Entry<String, DerivedMetric> entry : derivedMetrics.entrySet()) {
             DerivedMetric metric = entry.getValue();
-            if (metric.getUpdateStrategy() == DerivedMetricUpdateStrategy.SCHEDULED) {
-                scheduledCount++;
-                System.out.println("SCHEDULED指标: " + entry.getKey());
-                System.out.println("  计算间隔: " + metric.getCalculationInterval() + "秒");
-                System.out.println("  依赖数量: " + metric.getDependencies().size());
-            }
+            // 现在所有派生指标都使用事件驱动机制
+            derivedCount++;
+            System.out.println("派生指标: " + entry.getKey());
+            System.out.println("  现在使用事件驱动机制");
+            System.out.println("  依赖数量: " + metric.getDependencies().size());
         }
 
-        System.out.println("SCHEDULED策略指标总数: " + scheduledCount);
-        assertThat(scheduledCount).isGreaterThan(0);
+        System.out.println("派生指标总数: " + derivedCount);
+        assertThat(derivedCount).isGreaterThan(0);
     }
 
     @Test
@@ -121,20 +119,9 @@ public class ScheduledMetricUpdateTest {
 
         for (Map.Entry<String, DerivedMetric> entry : derivedMetrics.entrySet()) {
             DerivedMetric metric = entry.getValue();
-            switch (metric.getUpdateStrategy()) {
-                case SCHEDULED:
-                    scheduledCount++;
-                    System.out.println("SCHEDULED: " + entry.getKey() + " (间隔: " + metric.getCalculationInterval() + "s)");
-                    break;
-                case DEPENDENCY_DRIVEN:
-                    dependencyDrivenCount++;
-                    System.out.println("DEPENDENCY_DRIVEN: " + entry.getKey());
-                    break;
-                case REALTIME:
-                    realtimeCount++;
-                    System.out.println("REALTIME: " + entry.getKey());
-                    break;
-            }
+            // 现在所有派生指标都使用事件驱动机制
+            dependencyDrivenCount++;
+            System.out.println("事件驱动: " + entry.getKey());
         }
 
         System.out.println("\n策略分布统计:");
@@ -169,11 +156,9 @@ public class ScheduledMetricUpdateTest {
         LocalDateTime now = LocalDateTime.now();
         
         System.out.println("   当前时间: " + now);
-        System.out.println("   计算间隔: " + metric.getCalculationInterval() + "秒");
-        System.out.println("   更新策略: " + metric.getUpdateStrategy());
+        System.out.println("   现在所有派生指标都使用事件驱动机制");
         
-        // 验证SCHEDULED策略的配置
-        assertThat(metric.getUpdateStrategy()).isEqualTo(DerivedMetricUpdateStrategy.SCHEDULED);
-        assertThat(metric.getCalculationInterval()).isGreaterThan(0);
+        // 验证派生指标的基本配置
+        assertThat(metric).isNotNull();
     }
 }

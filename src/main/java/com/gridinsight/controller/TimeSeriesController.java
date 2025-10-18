@@ -82,7 +82,6 @@ public class TimeSeriesController {
             return ResponseEntity.ok(result);
             
         } catch (Exception e) {
-            e.printStackTrace(); // 添加调试日志
             Map<String, Object> errorResult = new HashMap<>();
             errorResult.put("success", false);
             errorResult.put("error", "查询历史数据失败: " + e.getMessage());

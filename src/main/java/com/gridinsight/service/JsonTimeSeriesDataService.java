@@ -125,7 +125,6 @@ public class JsonTimeSeriesDataService {
      */
     public void storeMetricValue(String metricIdentifier, MetricValue value, LocalDateTime timestamp) {
         if (value == null || !value.isValid()) {
-            System.out.println("跳过存储无效的指标值: " + metricIdentifier);
             return;
         }
 

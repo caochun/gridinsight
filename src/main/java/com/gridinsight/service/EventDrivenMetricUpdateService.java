@@ -143,11 +143,7 @@ public class EventDrivenMetricUpdateService {
             
             DerivedMetric derivedMetric = (DerivedMetric) metric;
             
-            // 检查更新策略
-            if (derivedMetric.getUpdateStrategy() != DerivedMetricUpdateStrategy.DEPENDENCY_DRIVEN) {
-                // 派生指标不使用依赖驱动策略，跳过
-                return;
-            }
+            // 现在所有派生指标都使用事件驱动机制
             
             // 开始更新派生指标
             

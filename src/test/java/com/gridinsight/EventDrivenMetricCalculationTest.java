@@ -246,9 +246,7 @@ public class EventDrivenMetricCalculationTest {
             "个",
             "测试派生指标B",
             "测试.基础.指标A + 测试.基础.指标A",
-            java.util.Arrays.asList(metricCalculationService.getMetric("测试.基础.指标A")),
-            DerivedMetricUpdateStrategy.DEPENDENCY_DRIVEN,
-            300
+            java.util.Arrays.asList(metricCalculationService.getMetric("测试.基础.指标A"))
         );
         metricB.setIdentifier("测试.派生.指标B");
         
@@ -260,9 +258,7 @@ public class EventDrivenMetricCalculationTest {
             "个",
             "测试派生指标C",
             "测试.基础.指标A * 2",
-            java.util.Arrays.asList(metricCalculationService.getMetric("测试.基础.指标A")),
-            DerivedMetricUpdateStrategy.DEPENDENCY_DRIVEN,
-            300
+            java.util.Arrays.asList(metricCalculationService.getMetric("测试.基础.指标A"))
         );
         metricC.setIdentifier("测试.派生.指标C");
         
@@ -274,9 +270,7 @@ public class EventDrivenMetricCalculationTest {
             "个",
             "测试派生指标D",
             "测试.派生.指标B * 1.5",
-            java.util.Arrays.asList(metricB),
-            DerivedMetricUpdateStrategy.DEPENDENCY_DRIVEN,
-            300
+            java.util.Arrays.asList(metricB)
         );
         metricD.setIdentifier("测试.派生.指标D");
         
@@ -300,9 +294,7 @@ public class EventDrivenMetricCalculationTest {
             "个",
             "测试复杂派生指标E",
             "sqrt(测试.基础.指标A * 测试.基础.指标A + 测试.基础.指标A * 测试.基础.指标A)",
-            java.util.Arrays.asList(metricCalculationService.getMetric("测试.基础.指标A")),
-            DerivedMetricUpdateStrategy.DEPENDENCY_DRIVEN,
-            300
+            java.util.Arrays.asList(metricCalculationService.getMetric("测试.基础.指标A"))
         );
         metricE.setIdentifier("测试.复杂.指标E");
         
