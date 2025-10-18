@@ -109,11 +109,8 @@
                         </div>
                         <div class="mb-3">
                             <small class="text-muted">更新策略:</small><br>
-                            <span class="badge bg-primary" th:text="${entry.value.updateStrategy}">策略</span>
-                            <span class="ms-2" th:if="${entry.value.updateStrategy?.name() == 'SCHEDULED'}">
-                                <small class="text-muted">间隔(秒):</small>
-                                <span class="badge bg-warning text-dark" th:text="${entry.value.calculationInterval}">300</span>
-                            </span>
+                            <span class="badge bg-primary">事件驱动</span>
+                            <small class="ms-2 text-muted">(依赖指标变化时自动更新)</small>
                         </div>
                         <div class="mb-3" th:if="${entry.value.dependencies != null and !entry.value.dependencies.isEmpty()}">
                             <small class="text-muted">依赖指标:</small><br>
