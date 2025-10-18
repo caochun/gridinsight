@@ -109,3 +109,4 @@ derivedMetrics:
     formula: "测试.HTTP.随机数 * 测试.HTTP.随机数"
     dependencies:
       - "测试.HTTP.随机数"
+    updateStrategy: "DEPENDENCY_DRIVEN"
