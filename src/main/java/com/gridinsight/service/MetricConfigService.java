@@ -136,8 +136,13 @@ public class MetricConfigService {
                 dataSource.setSourceAddress(dataSourceConfig.getSourceAddress());
             }
         }
+        
+        // 设置采样间隔（用于MQTT等被动数据源）
+        if (dataSourceConfig.getSamplingInterval() != null) {
+            dataSource.setSamplingInterval(dataSourceConfig.getSamplingInterval());
+        }
 
-        return new BasicMetric(
+        BasicMetric metric = new BasicMetric(
             config.getName(),
             config.getCategory(),
             config.getSubCategory(),
@@ -145,6 +150,13 @@ public class MetricConfigService {
             config.getDescription(),
             dataSource
         );
+        
+        // 设置UUID（如果配置中有的话）
+        if (config.getUuid() != null && !config.getUuid().isEmpty()) {
+            metric.setUuid(config.getUuid());
+        }
+        
+        return metric;
     }
 
     /**
@@ -172,7 +184,7 @@ public class MetricConfigService {
             updateStrategy = DerivedMetricUpdateStrategy.REALTIME;
         }
 
-        return new DerivedMetric(
+        DerivedMetric metric = new DerivedMetric(
             config.getName(),
             config.getCategory(),
             config.getSubCategory(),
@@ -183,6 +195,13 @@ public class MetricConfigService {
             updateStrategy,
             config.getCalculationInterval()
         );
+        
+        // 设置UUID（如果配置中有的话）
+        if (config.getUuid() != null && !config.getUuid().isEmpty()) {
+            metric.setUuid(config.getUuid());
+        }
+        
+        return metric;
     }
 
     // ========== 公共接口方法 ==========
@@ -192,6 +211,57 @@ public class MetricConfigService {
      */
     public Map<String, BasicMetric> getAllBasicMetrics() {
         return new HashMap<>(basicMetrics);
+    }
+    
+    /**
+     * 通过UUID获取指标
+     * @param uuid 指标UUID
+     * @return 指标对象，如果未找到返回null
+     */
+    public Metric getMetricByUuid(String uuid) {
+        // 先查找基础指标
+        for (BasicMetric metric : basicMetrics.values()) {
+            if (uuid.equals(metric.getUuid())) {
+                return metric;
+            }
+        }
+        
+        // 再查找派生指标
+        for (DerivedMetric metric : derivedMetrics.values()) {
+            if (uuid.equals(metric.getUuid())) {
+                return metric;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * 通过UUID获取基础指标
+     * @param uuid 指标UUID
+     * @return 基础指标对象，如果未找到返回null
+     */
+    public BasicMetric getBasicMetricByUuid(String uuid) {
+        for (BasicMetric metric : basicMetrics.values()) {
+            if (uuid.equals(metric.getUuid())) {
+                return metric;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * 通过UUID获取派生指标
+     * @param uuid 指标UUID
+     * @return 派生指标对象，如果未找到返回null
+     */
+    public DerivedMetric getDerivedMetricByUuid(String uuid) {
+        for (DerivedMetric metric : derivedMetrics.values()) {
+            if (uuid.equals(metric.getUuid())) {
+                return metric;
+            }
+        }
+        return null;
     }
 
     /**
@@ -312,6 +382,7 @@ public class MetricConfigService {
         private String subCategory;
         private String unit;
         private String description;
+        private String uuid;
         private DataSourceConfig dataSource;
 
         // Getters and Setters
@@ -325,6 +396,8 @@ public class MetricConfigService {
         public void setUnit(String unit) { this.unit = unit; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
+        public String getUuid() { return uuid; }
+        public void setUuid(String uuid) { this.uuid = uuid; }
         public DataSourceConfig getDataSource() { return dataSource; }
         public void setDataSource(DataSourceConfig dataSource) { this.dataSource = dataSource; }
     }
@@ -338,6 +411,7 @@ public class MetricConfigService {
         private String subCategory;
         private String unit;
         private String description;
+        private String uuid;
         private String formula;
         private String updateStrategy = "REALTIME";
         private Integer calculationInterval = 300;
@@ -354,6 +428,8 @@ public class MetricConfigService {
         public void setUnit(String unit) { this.unit = unit; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
+        public String getUuid() { return uuid; }
+        public void setUuid(String uuid) { this.uuid = uuid; }
         public String getFormula() { return formula; }
         public void setFormula(String formula) { this.formula = formula; }
         public String getUpdateStrategy() { return updateStrategy; }
@@ -371,7 +447,8 @@ public class MetricConfigService {
         private String sourceType;
         private String sourceAddress;
         private String sourceName;
-        private int refreshInterval;
+        private Integer refreshInterval;
+        private Integer samplingInterval;
         private boolean enabled;
         private Map<String, Object> config;
 
@@ -382,8 +459,10 @@ public class MetricConfigService {
         public void setSourceAddress(String sourceAddress) { this.sourceAddress = sourceAddress; }
         public String getSourceName() { return sourceName; }
         public void setSourceName(String sourceName) { this.sourceName = sourceName; }
-        public int getRefreshInterval() { return refreshInterval; }
-        public void setRefreshInterval(int refreshInterval) { this.refreshInterval = refreshInterval; }
+        public Integer getRefreshInterval() { return refreshInterval; }
+        public void setRefreshInterval(Integer refreshInterval) { this.refreshInterval = refreshInterval; }
+        public Integer getSamplingInterval() { return samplingInterval; }
+        public void setSamplingInterval(Integer samplingInterval) { this.samplingInterval = samplingInterval; }
         public boolean isEnabled() { return enabled; }
         public void setEnabled(boolean enabled) { this.enabled = enabled; }
         public Map<String, Object> getConfig() { return config; }

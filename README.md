@@ -130,18 +130,35 @@ mvn clean test
 
 ## 时序数据库
 
-`TimeSeriesDataService` 为内存占位：
-- `storeMetricValue` 写入
-- `getLatestMetricValue` 查询
-- `clearAllData` 清空  
-可在 `TimeSeriesConfig` 集成 InfluxDB/TDengine，并在调度与事件链路中落库与读取。
+**基于 JSON 文件的高性能本地时序存储**：
+- `JsonTimeSeriesDataService` 实现高性能本地时序数据存储
+- 支持指标值的持久化存储和历史查询
+- 每个指标使用独立的 JSON 文件，支持并发读写
+- 内置最新值缓存，提供毫秒级查询响应
+- 支持时间范围查询和统计计算
+
+**存储特性**：
+- 轻量级：基于 JSON 文件存储，无外部依赖
+- 高性能：支持高并发读写操作
+- 持久化：数据存储在本地文件系统
+- 易于调试：JSON 格式便于查看和调试
+- 故障恢复：支持应用重启后数据恢复
+
+**API接口**：
+- 历史查询：`GET /api/timeseries/history?metric=xxx&start=xxx&end=xxx`
+- 最新值：`GET /api/timeseries/latest?metric=xxx`
+- 批量查询：`POST /api/timeseries/latest-batch`
+- 统计信息：`GET /api/timeseries/statistics?metric=xxx&range=1h`
+- 存储统计：`GET /api/timeseries/storage-stats`
 
 ## 配置与调试
 
 - `src/main/resources/application.properties`
   - `server.port=9000`
   - `spring.thymeleaf.cache=false`（开发期禁用模板缓存）
-  - 时序库占位配置
+  - `gridinsight.timeseries.data-path=data/timeseries`（时序数据存储路径）
+  - `gridinsight.timeseries.type=json`（使用JSON文件存储）
+  - `gridinsight.timeseries.enable-cache=true`（启用最新值缓存）
 
 ## 目录结构
 
@@ -165,11 +182,16 @@ data/
 ## 已知限制与规划
 
 - 公式函数有限（sqrt/abs/max/min），可扩展
-- 时序库为内存占位，建议切到真实 TSDB
+- ~~时序库为内存占位~~ ✅ **已实现基于JSON文件的高性能本地存储**
 - Web UI 规划：调度/事件监控、时序曲线可视化、定义导入导出、审计与权限
+- 时序数据可视化：可集成Grafana等可视化工具
 
 ## 最新更新
 
+- **JSON文件存储集成**：实现基于JSON文件的高性能本地时序数据存储
+- **时序数据API**：新增完整的时序数据查询和统计API接口
+- **持久化存储**：指标更新现在会持久化存储到本地文件系统
+- **高性能缓存**：内置最新值缓存，提供毫秒级查询响应
 - 代码清理：移除所有调试输出，优化异常处理
 - 统一异常处理：新增 `ExceptionHandler` 工具类
 - 数据源重构：支持灵活配置，包括数据库连接字符串和查询语句

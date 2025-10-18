@@ -6,6 +6,8 @@
     <title>API 文档 - GridInsight</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -30,31 +32,92 @@
     <div class="mb-4">
         <h5>获取全部指标列表</h5>
         <pre><code>GET /api/metrics/list</code></pre>
-        <button class="btn btn-sm btn-outline-primary" onclick="tryCall('/api/metrics/list')">试一试</button>
-        <div class="mt-2 small text-muted" id="resp-list"></div>
+        <button class="btn btn-sm btn-outline-primary" onclick="showAllMetrics()">查看所有指标</button>
     </div>
 
     <div class="mb-4">
         <h5>查询单个指标值</h5>
-        <pre><code>GET /api/metrics/query?identifier=分类.子分类.指标名称</code></pre>
-        <div class="input-group mb-2">
-            <input id="single-id" class="form-control" placeholder="输入指标标识符">
-            <button class="btn btn-outline-primary" onclick="querySingle()">查询</button>
-        </div>
-        <div class="row g-3">
+        <div class="row mb-3">
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">实时值</div>
-                    <div class="card-body">
-                        <div class="small" id="resp-query"><span class="text-muted">请输入标识符进行查询</span></div>
-                    </div>
+                <h6>方式1: 使用标识符查询</h6>
+                <pre><code>GET /api/metrics/query?identifier=分类.子分类.指标名称</code></pre>
+                <div class="input-group">
+                    <input id="single-id" class="form-control" placeholder="输入指标标识符">
+                    <button class="btn btn-outline-primary" onclick="querySingle()">查询</button>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">指标定义</div>
-                    <div class="card-body" id="resp-def-friendly">
-                        <span class="text-muted">请输入标识符进行查询</span>
+                <h6>方式2: 使用UUID查询 (推荐)</h6>
+                <pre><code>GET /api/metrics/query-by-uuid?uuid=550e8400-e29b-41d4-a716-446655440001</code></pre>
+                <div class="input-group">
+                    <input id="single-uuid" class="form-control" placeholder="输入指标UUID">
+                    <button class="btn btn-outline-success" onclick="querySingleByUuid()">查询</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab导航 -->
+        <ul class="nav nav-tabs" id="metricTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="realtime-tab" data-bs-toggle="tab" data-bs-target="#realtime-pane" type="button" role="tab" aria-controls="realtime-pane" aria-selected="true">
+                    <i class="bi bi-speedometer2"></i> 实时值
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab" aria-controls="history-pane" aria-selected="false">
+                    <i class="bi bi-graph-up"></i> 历史值
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Tab内容 -->
+        <div class="tab-content" id="metricTabContent">
+            <!-- 实时值Tab -->
+            <div class="tab-pane fade show active" id="realtime-pane" role="tabpanel" aria-labelledby="realtime-tab">
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">实时值</div>
+                            <div class="card-body">
+                                <div class="small" id="resp-query"><span class="text-muted">请输入标识符进行查询</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">指标定义</div>
+                            <div class="card-body" id="resp-def-friendly">
+                                <span class="text-muted">请输入标识符进行查询</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 历史值Tab -->
+            <div class="tab-pane fade" id="history-pane" role="tabpanel" aria-labelledby="history-tab">
+                <div class="mt-3">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>历史值图表</span>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary" onclick="loadHistoryData('1h')">1小时</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="loadHistoryData('6h')">6小时</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="loadHistoryData('24h')">24小时</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="loadHistoryData('7d')">7天</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-container" style="position: relative; height: 400px;">
+                                <canvas id="metricChart"></canvas>
+                            </div>
+                            <div id="chart-loading" class="text-center text-muted" style="display: none;">
+                                <i class="bi bi-hourglass-split"></i> 加载中...
+                            </div>
+                            <div id="chart-error" class="text-center text-danger" style="display: none;">
+                                <i class="bi bi-exclamation-triangle"></i> 加载失败
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -89,7 +152,53 @@ Body: ["标识符1","标识符2"]</pre>
     </div>
 </div>
 
+<!-- 指标列表模态框 -->
+<div class="modal fade" id="allMetricsModal" tabindex="-1" aria-labelledby="allMetricsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="allMetricsModalLabel">
+                    <i class="bi bi-list-ul"></i> 所有指标列表
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <div id="metrics-loading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2 text-muted">正在加载指标列表...</p>
+                </div>
+                <div id="metrics-content" style="display: none;">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>基础指标</h6>
+                            <div id="basic-metrics-list"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>派生指标</h6>
+                            <div id="derived-metrics-list"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="metrics-error" class="text-center py-4" style="display: none;">
+                    <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2rem;"></i>
+                    <p class="mt-2 text-danger">加载指标列表失败</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="refreshMetricsList()">刷新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+// 全局变量
+let metricChart = null;
+let currentMetricId = null;
+
 function tryCall(path){
   fetch(path).then(r=>r.text()).then(t=>{
     document.getElementById('resp-'+path.split('/').pop()).innerText=t;
@@ -120,6 +229,10 @@ function renderRealtimeFriendly(target, data){
 function querySingle(){
   const id=document.getElementById('single-id').value.trim();
   if(!id){alert('请输入标识符');return}
+  
+  // 设置当前指标ID，用于历史数据查询
+  currentMetricId = id;
+  
   // 1) 查询实时值并友好展示
   fetch('/api/metrics/query?identifier='+encodeURIComponent(id))
     .then(r=>r.json())
@@ -156,6 +269,67 @@ function querySingle(){
           box.innerHTML = `
             <table class="table table-sm">
               <tr><td><strong>标识符</strong></td><td><code>${m.identifier||id}</code></td></tr>
+              <tr><td><strong>UUID</strong></td><td><code class="text-success">${m.uuid||'-'}</code></td></tr>
+              <tr><td><strong>名称</strong></td><td>${m.name||'-'}</td></tr>
+              <tr><td><strong>分类</strong></td><td>${m.category||'-'} / ${m.subCategory||'-'}</td></tr>
+              <tr><td><strong>单位</strong></td><td><span class="badge bg-secondary">${m.unit||'-'}</span></td></tr>
+              <tr><td><strong>类型</strong></td><td><span class="badge ${isDerived?'bg-success':'bg-primary'}">${m.metricType||'-'}</span></td></tr>
+              ${isDerived?`<tr><td><strong>依赖</strong></td><td>${depsHtml}</td></tr>`:''}
+              ${strategyHtml}
+              ${isDerived?`<tr><td><strong>公式</strong></td><td><div class="border rounded p-2 bg-light">${m.formula||'-'}</div></td></tr>`:''}
+              <tr><td><strong>描述</strong></td><td>${m.description||'-'}</td></tr>
+            </table>
+          `;
+        })
+        .catch(()=>{
+          document.getElementById('resp-def-friendly').innerHTML = '<span class="text-danger">获取指标定义失败</span>';
+        });
+    });
+}
+
+function querySingleByUuid(){
+  const uuid=document.getElementById('single-uuid').value.trim();
+  if(!uuid){alert('请输入UUID');return}
+  
+  // 设置当前指标ID，用于历史数据查询
+  currentMetricId = uuid;
+  
+  // 1) 查询实时值并友好展示
+  fetch('/api/metrics/query-by-uuid?uuid='+encodeURIComponent(uuid))
+    .then(r=>r.json())
+    .then(data=>{ renderRealtimeFriendly('resp-query', data); })
+    .catch(()=>{ document.getElementById('resp-query').innerHTML='<span class="text-danger">请求失败</span>'; })
+    .then(()=>{
+      // 2) 拉取定义（后台已有管理端API）
+      return fetch('/admin/metrics/api?uuid='+encodeURIComponent(uuid))
+        .then(r=>r.json())
+        .then(data=>{
+          const box = document.getElementById('resp-def-friendly');
+          if(!data || !data.success || !data.metric){
+            box.innerHTML = '<span class="text-danger">未找到该指标的定义</span>';
+            return;
+          }
+          const m = data.metric;
+          const isDerived = m.metricType && (''+m.metricType).toUpperCase().includes('DERIVED');
+          let depsHtml = '';
+          if (isDerived) {
+            if (m.dependencies && m.dependencies.length>0){
+              depsHtml = m.dependencies.map(d=>`<span class="badge bg-info me-1">${d.identifier}</span>`).join('');
+            } else {
+              depsHtml = '<span class="text-muted">无</span>';
+            }
+          }
+          let strategyHtml = '';
+          if (isDerived && m.updateStrategy){
+            strategyHtml = `<tr><td><strong>更新策略</strong></td><td><span class="badge bg-primary">${m.updateStrategy}</span></td></tr>`;
+            if ((m.updateStrategy+'' ).toUpperCase()==='SCHEDULED' && typeof m.calculationInterval!=='undefined'){
+              strategyHtml += `<tr><td><strong>计算间隔(秒)</strong></td><td><span class="badge bg-warning text-dark">${m.calculationInterval}</span></td></tr>`;
+            }
+          }
+          box.innerHTML = `
+            <table class="table table-sm">
+              <tr><td><strong>标识符</strong></td><td><code>${m.identifier||'-'}</code></td></tr>
+              <tr><td><strong>UUID</strong></td><td><code class="text-success">${m.uuid||uuid}</code></td></tr>
               <tr><td><strong>名称</strong></td><td>${m.name||'-'}</td></tr>
               <tr><td><strong>分类</strong></td><td>${m.category||'-'} / ${m.subCategory||'-'}</td></tr>
               <tr><td><strong>单位</strong></td><td><span class="badge bg-secondary">${m.unit||'-'}</span></td></tr>
@@ -237,6 +411,330 @@ function clearCache(){
   fetch('/api/metrics/clear-cache',{method:'POST'})
     .then(r=>r.text()).then(t=>{document.getElementById('resp-clear').innerText=t;});
 }
+
+// 显示所有指标列表
+function showAllMetrics() {
+    const modal = new bootstrap.Modal(document.getElementById('allMetricsModal'));
+    modal.show();
+    loadMetricsList();
+}
+
+// 加载指标列表
+function loadMetricsList() {
+    // 显示加载状态
+    document.getElementById('metrics-loading').style.display = 'block';
+    document.getElementById('metrics-content').style.display = 'none';
+    document.getElementById('metrics-error').style.display = 'none';
+    
+    fetch('/api/metrics/list')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('metrics-loading').style.display = 'none';
+            
+            if (data && data.basicMetrics && data.derivedMetrics) {
+                renderMetricsList(data);
+                document.getElementById('metrics-content').style.display = 'block';
+            } else {
+                document.getElementById('metrics-error').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading metrics list:', error);
+            document.getElementById('metrics-loading').style.display = 'none';
+            document.getElementById('metrics-error').style.display = 'block';
+        });
+}
+
+// 刷新指标列表
+function refreshMetricsList() {
+    loadMetricsList();
+}
+
+// 填充标识符到查询输入框
+function fillIdentifier(identifier) {
+    document.getElementById('single-id').value = identifier;
+    // 关闭模态框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('allMetricsModal'));
+    if (modal) {
+        modal.hide();
+    }
+    // 自动执行查询
+    querySingle();
+}
+
+// 填充UUID到查询输入框
+function fillUuid(uuid) {
+    if (!uuid || uuid === 'N/A') {
+        alert('该指标没有UUID');
+        return;
+    }
+    document.getElementById('single-uuid').value = uuid;
+    // 关闭模态框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('allMetricsModal'));
+    if (modal) {
+        modal.hide();
+    }
+    // 自动执行查询
+    querySingleByUuid();
+}
+
+// 渲染指标列表
+function renderMetricsList(data) {
+    // 渲染基础指标
+    const basicMetricsList = document.getElementById('basic-metrics-list');
+    if (data.basicMetrics && Object.keys(data.basicMetrics).length > 0) {
+        let basicHtml = '<div class="list-group">';
+        for (const [identifier, metric] of Object.entries(data.basicMetrics)) {
+            basicHtml += `
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${metric.name || identifier}</h6>
+                            <p class="mb-1 text-muted small">${metric.description || '无描述'}</p>
+                            <div class="small">
+                                <span class="badge bg-primary me-1">${metric.category || ''}</span>
+                                <span class="badge bg-secondary me-1">${metric.subCategory || ''}</span>
+                                <span class="badge bg-info">${metric.unit || ''}</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-muted mb-1">标识符</div>
+                            <a href="javascript:void(0)" class="text-decoration-none" onclick="fillIdentifier('${identifier}')">
+                                <code class="small text-primary">${identifier}</code>
+                            </a>
+                            <div class="small text-success mt-1">UUID</div>
+                            <a href="javascript:void(0)" class="text-decoration-none" onclick="fillUuid('${metric.uuid || ''}')">
+                                <code class="small text-success">${metric.uuid || 'N/A'}</code>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        basicHtml += '</div>';
+        basicMetricsList.innerHTML = basicHtml;
+    } else {
+        basicMetricsList.innerHTML = '<p class="text-muted">暂无基础指标</p>';
+    }
+    
+    // 渲染派生指标
+    const derivedMetricsList = document.getElementById('derived-metrics-list');
+    if (data.derivedMetrics && Object.keys(data.derivedMetrics).length > 0) {
+        let derivedHtml = '<div class="list-group">';
+        for (const [identifier, metric] of Object.entries(data.derivedMetrics)) {
+            derivedHtml += `
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${metric.name || identifier}</h6>
+                            <p class="mb-1 text-muted small">${metric.description || '无描述'}</p>
+                            <div class="small">
+                                <span class="badge bg-success me-1">${metric.category || ''}</span>
+                                <span class="badge bg-secondary me-1">${metric.subCategory || ''}</span>
+                                <span class="badge bg-info">${metric.unit || ''}</span>
+                            </div>
+                            ${metric.formula ? `<div class="mt-1"><code class="small">${metric.formula}</code></div>` : ''}
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-muted mb-1">标识符</div>
+                            <a href="javascript:void(0)" class="text-decoration-none" onclick="fillIdentifier('${identifier}')">
+                                <code class="small text-primary">${identifier}</code>
+                            </a>
+                            <div class="small text-success mt-1">UUID</div>
+                            <a href="javascript:void(0)" class="text-decoration-none" onclick="fillUuid('${metric.uuid || ''}')">
+                                <code class="small text-success">${metric.uuid || 'N/A'}</code>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        derivedHtml += '</div>';
+        derivedMetricsList.innerHTML = derivedHtml;
+    } else {
+        derivedMetricsList.innerHTML = '<p class="text-muted">暂无派生指标</p>';
+    }
+}
+
+// 图表相关函数
+function loadHistoryData(timeRange) {
+  console.log('loadHistoryData被调用，timeRange:', timeRange, 'currentMetricId:', currentMetricId);
+  
+  if (!currentMetricId) {
+    console.log('currentMetricId为空，无法加载历史数据');
+    alert('请先查询一个指标');
+    return;
+  }
+  
+  // 显示加载状态
+  document.getElementById('chart-loading').style.display = 'block';
+  document.getElementById('chart-error').style.display = 'none';
+  
+  // 计算时间范围
+  const now = new Date();
+  let startTime;
+  switch(timeRange) {
+    case '1h':
+      startTime = new Date(now.getTime() - 60 * 60 * 1000);
+      break;
+    case '6h':
+      startTime = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+      break;
+    case '24h':
+      startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      break;
+    case '7d':
+      startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  }
+  
+  // 直接查询历史数据（支持UUID和identifier）
+  queryHistoryWithIdentifier(currentMetricId, startTime, now);
+}
+
+function queryHistoryWithIdentifier(identifier, startTime, endTime) {
+  // 判断是UUID还是identifier
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+  
+  // 构建查询URL
+  const params = new URLSearchParams({
+    start: startTime.toISOString(),
+    end: endTime.toISOString()
+  });
+  
+  if (isUuid) {
+    params.append('metricUuid', identifier);
+  } else {
+    params.append('metric', identifier);
+  }
+  
+  console.log('查询历史数据:', identifier, startTime.toISOString(), endTime.toISOString());
+  console.log('请求URL:', '/api/timeseries/history?' + params.toString());
+  
+  fetch('/api/timeseries/history?' + params.toString())
+    .then(response => response.json())
+    .then(data => {
+      console.log('历史数据查询响应:', data);
+      document.getElementById('chart-loading').style.display = 'none';
+      
+      if (data.success && data.data && data.data.length > 0) {
+        console.log('数据查询成功，开始渲染图表，数据条数:', data.data.length);
+        renderChart(data.data);
+      } else {
+        console.log('数据查询失败或无数据:', data);
+        document.getElementById('chart-error').style.display = 'block';
+        document.getElementById('chart-error').innerHTML = '<i class="bi bi-exclamation-triangle"></i> 没有找到历史数据';
+      }
+    })
+    .catch(error => {
+      console.error('Error loading history data:', error);
+      document.getElementById('chart-loading').style.display = 'none';
+      document.getElementById('chart-error').style.display = 'block';
+      document.getElementById('chart-error').innerHTML = '<i class="bi bi-exclamation-triangle"></i> 加载失败: ' + error.message;
+    });
+}
+
+function renderChart(data) {
+  console.log('renderChart被调用，数据长度:', data.length);
+  console.log('前3条数据:', data.slice(0, 3));
+  
+  const ctx = document.getElementById('metricChart').getContext('2d');
+  
+  // 销毁现有图表
+  if (metricChart) {
+    metricChart.destroy();
+  }
+  
+  // 准备数据
+  const labels = data.map(item => {
+    const date = new Date(item.timestamp);
+    return date.toLocaleString('zh-CN', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  });
+  
+  const values = data.map(item => parseFloat(item.value) || 0);
+  
+  console.log('处理后的标签数量:', labels.length);
+  console.log('处理后的值数量:', values.length);
+  console.log('前3个标签:', labels.slice(0, 3));
+  console.log('前3个值:', values.slice(0, 3));
+  
+  // 创建图表
+  console.log('开始创建Chart.js图表...');
+  metricChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: currentMetricId,
+        data: values,
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        tension: 0.1,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: false,
+          title: {
+            display: true,
+            text: '数值'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: '时间'
+          }
+        }
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: '指标历史值趋势图'
+        },
+        legend: {
+          display: true,
+          position: 'top'
+        }
+      }
+    }
+  });
+  
+  console.log('图表创建完成，metricChart:', metricChart);
+  console.log('图表是否有效:', metricChart && typeof metricChart.update === 'function');
+  
+  // 检查canvas元素
+  const canvas = document.getElementById('metricChart');
+  console.log('Canvas元素:', canvas);
+  console.log('Canvas尺寸:', canvas ? canvas.width + 'x' + canvas.height : 'N/A');
+}
+
+// 当切换到历史值tab时，自动加载24小时数据
+document.addEventListener('DOMContentLoaded', function() {
+  const historyTab = document.getElementById('history-tab');
+  historyTab.addEventListener('shown.bs.tab', function() {
+    console.log('历史值tab被点击，currentMetricId:', currentMetricId);
+    if (currentMetricId) {
+      console.log('开始加载历史数据...');
+      loadHistoryData('24h');
+    } else {
+      console.log('currentMetricId为空，无法加载历史数据');
+      document.getElementById('chart-error').style.display = 'block';
+      document.getElementById('chart-error').innerHTML = '<i class="bi bi-exclamation-triangle"></i> 请先查询一个指标';
+    }
+  });
+});
 </script>
 
 </body>

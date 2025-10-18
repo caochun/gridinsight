@@ -1,0 +1,257 @@
+[ {
+  "value" : 112.9265863056,
+  "timestamp" : "2025-10-18T12:38:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 77.1664318399,
+  "timestamp" : "2025-10-18T12:38:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 146.5322844785,
+  "timestamp" : "2025-10-18T12:38:19",
+  "quality" : "GOOD"
+}, {
+  "value" : 148.7013784988,
+  "timestamp" : "2025-10-18T12:38:25",
+  "quality" : "GOOD"
+}, {
+  "value" : 429.1389281106,
+  "timestamp" : "2025-10-18T12:38:31",
+  "quality" : "GOOD"
+}, {
+  "value" : 79.2769615565,
+  "timestamp" : "2025-10-18T12:38:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 426.6467327365,
+  "timestamp" : "2025-10-18T12:38:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 46.4339307089,
+  "timestamp" : "2025-10-18T12:38:49",
+  "quality" : "GOOD"
+}, {
+  "value" : 47.0312856836,
+  "timestamp" : "2025-10-18T12:38:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 395.866969407,
+  "timestamp" : "2025-10-18T12:39:01",
+  "quality" : "GOOD"
+}, {
+  "value" : 449.8607484376,
+  "timestamp" : "2025-10-18T12:39:08",
+  "quality" : "GOOD"
+}, {
+  "value" : 462.0087288649,
+  "timestamp" : "2025-10-18T12:39:14",
+  "quality" : "GOOD"
+}, {
+  "value" : 62.4673050405,
+  "timestamp" : "2025-10-18T12:39:20",
+  "quality" : "GOOD"
+}, {
+  "value" : 180.6789014301,
+  "timestamp" : "2025-10-18T12:39:26",
+  "quality" : "GOOD"
+}, {
+  "value" : 42.0761515296,
+  "timestamp" : "2025-10-18T12:39:32",
+  "quality" : "GOOD"
+}, {
+  "value" : 157.1743946124,
+  "timestamp" : "2025-10-18T12:39:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 126.809108476,
+  "timestamp" : "2025-10-18T12:39:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 330.2270720373,
+  "timestamp" : "2025-10-18T12:39:49",
+  "quality" : "GOOD"
+}, {
+  "value" : 193.9678500611,
+  "timestamp" : "2025-10-18T12:39:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 271.1815507347,
+  "timestamp" : "2025-10-18T12:40:01",
+  "quality" : "GOOD"
+}, {
+  "value" : 391.3653061965,
+  "timestamp" : "2025-10-18T12:40:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 478.5462690513,
+  "timestamp" : "2025-10-18T12:40:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 426.7118019626,
+  "timestamp" : "2025-10-18T12:40:20",
+  "quality" : "GOOD"
+}, {
+  "value" : 270.7467939317,
+  "timestamp" : "2025-10-18T12:40:26",
+  "quality" : "GOOD"
+}, {
+  "value" : 491.1761357518,
+  "timestamp" : "2025-10-18T12:40:32",
+  "quality" : "GOOD"
+}, {
+  "value" : 44.4610681793,
+  "timestamp" : "2025-10-18T12:40:38",
+  "quality" : "GOOD"
+}, {
+  "value" : 356.2296781419,
+  "timestamp" : "2025-10-18T12:40:44",
+  "quality" : "GOOD"
+}, {
+  "value" : 252.3422534613,
+  "timestamp" : "2025-10-18T12:40:50",
+  "quality" : "GOOD"
+}, {
+  "value" : 417.7451654717,
+  "timestamp" : "2025-10-18T12:40:57",
+  "quality" : "GOOD"
+}, {
+  "value" : 462.2353476085,
+  "timestamp" : "2025-10-18T12:41:03",
+  "quality" : "GOOD"
+}, {
+  "value" : 368.0599285258,
+  "timestamp" : "2025-10-18T12:41:09",
+  "quality" : "GOOD"
+}, {
+  "value" : 290.1698584585,
+  "timestamp" : "2025-10-18T12:41:15",
+  "quality" : "GOOD"
+}, {
+  "value" : 255.3268658647,
+  "timestamp" : "2025-10-18T12:41:21",
+  "quality" : "GOOD"
+}, {
+  "value" : 351.4612345041,
+  "timestamp" : "2025-10-18T12:41:27",
+  "quality" : "GOOD"
+}, {
+  "value" : 439.9642765399,
+  "timestamp" : "2025-10-18T12:41:33",
+  "quality" : "GOOD"
+}, {
+  "value" : 148.1798483913,
+  "timestamp" : "2025-10-18T12:41:39",
+  "quality" : "GOOD"
+}, {
+  "value" : 380.3795112606,
+  "timestamp" : "2025-10-18T12:41:45",
+  "quality" : "GOOD"
+}, {
+  "value" : 7.0469405702,
+  "timestamp" : "2025-10-18T12:41:52",
+  "quality" : "GOOD"
+}, {
+  "value" : 274.3792579781,
+  "timestamp" : "2025-10-18T12:41:58",
+  "quality" : "GOOD"
+}, {
+  "value" : 299.492772405,
+  "timestamp" : "2025-10-18T12:42:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 348.7926970291,
+  "timestamp" : "2025-10-18T12:42:38",
+  "quality" : "GOOD"
+}, {
+  "value" : 215.162900992,
+  "timestamp" : "2025-10-18T12:42:49",
+  "quality" : "GOOD"
+}, {
+  "value" : 27.8221389516,
+  "timestamp" : "2025-10-18T12:42:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 321.5845529906,
+  "timestamp" : "2025-10-18T12:43:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 320.4989085797,
+  "timestamp" : "2025-10-18T12:43:41",
+  "quality" : "GOOD"
+}, {
+  "value" : 26.0054839306,
+  "timestamp" : "2025-10-18T12:43:46",
+  "quality" : "GOOD"
+}, {
+  "value" : 49.3605047688,
+  "timestamp" : "2025-10-18T12:43:51",
+  "quality" : "GOOD"
+}, {
+  "value" : 360.5937591467,
+  "timestamp" : "2025-10-18T12:43:57",
+  "quality" : "GOOD"
+}, {
+  "value" : 496.0785206048,
+  "timestamp" : "2025-10-18T12:44:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 239.2376960654,
+  "timestamp" : "2025-10-18T12:44:48",
+  "quality" : "GOOD"
+}, {
+  "value" : 165.2549103162,
+  "timestamp" : "2025-10-18T12:44:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 483.1106085919,
+  "timestamp" : "2025-10-18T12:45:00",
+  "quality" : "GOOD"
+}, {
+  "value" : 164.9675174871,
+  "timestamp" : "2025-10-18T12:45:06",
+  "quality" : "GOOD"
+}, {
+  "value" : 482.9663636948,
+  "timestamp" : "2025-10-18T12:45:18",
+  "quality" : "GOOD"
+}, {
+  "value" : 171.8841110337,
+  "timestamp" : "2025-10-18T12:45:24",
+  "quality" : "GOOD"
+}, {
+  "value" : 358.8070267348,
+  "timestamp" : "2025-10-18T12:45:31",
+  "quality" : "GOOD"
+}, {
+  "value" : 89.8774362679,
+  "timestamp" : "2025-10-18T12:45:36",
+  "quality" : "GOOD"
+}, {
+  "value" : 392.1149205939,
+  "timestamp" : "2025-10-18T12:45:42",
+  "quality" : "GOOD"
+}, {
+  "value" : 324.0620378119,
+  "timestamp" : "2025-10-18T12:46:24",
+  "quality" : "GOOD"
+}, {
+  "value" : 342.2671441249,
+  "timestamp" : "2025-10-18T12:46:45",
+  "quality" : "GOOD"
+}, {
+  "value" : 77.0368417221,
+  "timestamp" : "2025-10-18T12:47:09",
+  "quality" : "GOOD"
+}, {
+  "value" : 17.0513976245,
+  "timestamp" : "2025-10-18T12:47:15",
+  "quality" : "GOOD"
+}, {
+  "value" : 230.8560386293,
+  "timestamp" : "2025-10-18T12:48:00",
+  "quality" : "GOOD"
+}, {
+  "value" : 147.3776308695,
+  "timestamp" : "2025-10-18T12:48:05",
+  "quality" : "GOOD"
+} ]

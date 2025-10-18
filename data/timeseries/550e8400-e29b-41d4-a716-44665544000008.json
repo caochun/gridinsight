@@ -1,0 +1,13 @@
+[ {
+  "value" : 96.0,
+  "timestamp" : "2025-10-18T12:11:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 96.0,
+  "timestamp" : "2025-10-18T12:25:01",
+  "quality" : "GOOD"
+}, {
+  "value" : 96.0,
+  "timestamp" : "2025-10-18T12:38:06",
+  "quality" : "GOOD"
+} ]

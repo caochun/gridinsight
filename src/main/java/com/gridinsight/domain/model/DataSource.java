@@ -46,9 +46,14 @@ public class DataSource {
     private String description;
     
     /**
-     * 刷新频率（秒）
+     * 刷新频率（秒）- 用于主动获取类数据源（HTTP_API, DATABASE, FILE）
      */
     private Integer refreshInterval;
+    
+    /**
+     * 采样间隔（秒）- 用于被动订阅类数据源（MQTT）
+     */
+    private Integer samplingInterval;
     
     /**
      * 是否启用
@@ -115,12 +120,13 @@ public class DataSource {
      * @param qos QoS级别
      * @param sourceName 数据源名称
      * @param description 数据源描述
-     * @param refreshInterval 刷新频率（秒）
+     * @param samplingInterval 采样间隔（秒）
      * @return MQTT数据源
      */
     public static DataSource createMqtt(String broker, Integer port, String topic, Integer qos,
-                                       String sourceName, String description, Integer refreshInterval) {
-        DataSource dataSource = new DataSource(SourceType.MQTT, sourceName, description, refreshInterval, true);
+                                       String sourceName, String description, Integer samplingInterval) {
+        DataSource dataSource = new DataSource(SourceType.MQTT, sourceName, description, null, true);
+        dataSource.setSamplingInterval(samplingInterval);
         dataSource.setConfig("broker", broker);
         dataSource.setConfig("port", port != null ? port : 1883);
         dataSource.setConfig("topic", topic);
@@ -243,6 +249,37 @@ public class DataSource {
     }
     
     /**
+     * 判断是否为主动获取类数据源
+     * @return true 如果是主动获取类数据源（HTTP_API, DATABASE, FILE）
+     */
+    public boolean isActiveDataSource() {
+        return sourceType == SourceType.HTTP_API || 
+               sourceType == SourceType.DATABASE || 
+               sourceType == SourceType.FILE;
+    }
+    
+    /**
+     * 判断是否为被动订阅类数据源
+     * @return true 如果是被动订阅类数据源（MQTT）
+     */
+    public boolean isPassiveDataSource() {
+        return sourceType == SourceType.MQTT;
+    }
+    
+    /**
+     * 获取更新间隔（根据数据源类型返回刷新间隔或采样间隔）
+     * @return 更新间隔（秒）
+     */
+    public Integer getUpdateInterval() {
+        if (isActiveDataSource()) {
+            return refreshInterval;
+        } else if (isPassiveDataSource()) {
+            return samplingInterval;
+        }
+        return null;
+    }
+    
+    /**
      * 设置所有配置
      * @param config 配置Map
      */
@@ -282,6 +319,14 @@ public class DataSource {
     
     public void setRefreshInterval(Integer refreshInterval) {
         this.refreshInterval = refreshInterval;
+    }
+    
+    public Integer getSamplingInterval() {
+        return samplingInterval;
+    }
+    
+    public void setSamplingInterval(Integer samplingInterval) {
+        this.samplingInterval = samplingInterval;
     }
     
     public Boolean getEnabled() {
@@ -378,6 +423,7 @@ public class DataSource {
                ", sourceName='" + sourceName + '\'' +
                ", description='" + description + '\'' +
                ", refreshInterval=" + refreshInterval +
+               ", samplingInterval=" + samplingInterval +
                ", enabled=" + enabled +
                ", config=" + config +
                '}';

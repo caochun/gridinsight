@@ -1,6 +1,7 @@
 package com.gridinsight.domain.model;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * 电力行业数字化管控指标基础类
@@ -40,6 +41,12 @@ public class Metric {
     private String identifier;
     
     /**
+     * 指标UUID - 用于API查询和内部引用
+     * 避免中文标识符在URL中的编码问题
+     */
+    private String uuid;
+    
+    /**
      * 指标描述
      */
     private String description;
@@ -66,6 +73,7 @@ public class Metric {
         this.unit = unit;
         this.description = description;
         this.identifier = generateIdentifier(category, subCategory, name);
+        this.uuid = UUID.randomUUID().toString();
         this.metricType = MetricType.BASIC;
     }
     
@@ -158,6 +166,14 @@ public class Metric {
         this.description = description;
     }
     
+    public String getUuid() {
+        return uuid;
+    }
+    
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -180,6 +196,7 @@ public class Metric {
                ", metricType=" + metricType +
                ", unit='" + unit + '\'' +
                ", identifier='" + identifier + '\'' +
+               ", uuid='" + uuid + '\'' +
                ", description='" + description + '\'' +
                '}';
     }

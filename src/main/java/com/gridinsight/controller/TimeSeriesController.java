@@ -1,7 +1,10 @@
 package com.gridinsight.controller;
 
 import com.gridinsight.domain.model.MetricValue;
+import com.gridinsight.domain.model.BasicMetric;
+import com.gridinsight.domain.model.DerivedMetric;
 import com.gridinsight.service.TimeSeriesDataService;
+import com.gridinsight.service.MetricConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -14,144 +17,220 @@ import java.util.Map;
 
 /**
  * 时序数据查询控制器
- * 提供基于时序数据库的指标查询API
+ * 提供时序数据的查询和统计接口
  */
 @RestController
 @RequestMapping("/api/timeseries")
+@CrossOrigin(origins = "*")
 public class TimeSeriesController {
 
     @Autowired
     private TimeSeriesDataService timeSeriesDataService;
-
-    /**
-     * 查询最新指标值
-     */
-    @GetMapping("/latest/{identifier}")
-    public ResponseEntity<Map<String, Object>> getLatestMetricValue(@PathVariable String identifier) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            MetricValue value = timeSeriesDataService.getLatestMetricValue(identifier);
-            response.put("success", true);
-            response.put("data", value);
-            response.put("timestamp", LocalDateTime.now());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "查询失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
+    
+    @Autowired
+    private MetricConfigService metricConfigService;
 
     /**
      * 查询指标历史数据
+     * GET /api/timeseries/history?metric=xxx&start=xxx&end=xxx
      */
-    @GetMapping("/history/{identifier}")
+    @GetMapping("/history")
     public ResponseEntity<Map<String, Object>> getMetricHistory(
-            @PathVariable String identifier,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
+            @RequestParam(required = false) String metric,
+            @RequestParam(required = false) String metricUuid,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         
-        Map<String, Object> response = new HashMap<>();
         try {
-            List<MetricValue> history = timeSeriesDataService.getMetricHistory(identifier, startTime, endTime);
-            response.put("success", true);
-            response.put("data", history);
-            response.put("count", history.size());
-            response.put("timeRange", Map.of(
-                "startTime", startTime,
-                "endTime", endTime
-            ));
-            return ResponseEntity.ok(response);
+            String metricIdentifier = metric;
+            
+            // 如果提供了UUID，先通过UUID获取identifier
+            if (metricUuid != null && !metricUuid.isEmpty()) {
+                BasicMetric basicMetric = metricConfigService.getBasicMetricByUuid(metricUuid);
+                if (basicMetric != null) {
+                    metricIdentifier = basicMetric.getIdentifier();
+                } else {
+                    DerivedMetric derivedMetric = metricConfigService.getDerivedMetricByUuid(metricUuid);
+                    if (derivedMetric != null) {
+                        metricIdentifier = derivedMetric.getIdentifier();
+                    } else {
+                        Map<String, Object> result = new HashMap<>();
+                        result.put("success", false);
+                        result.put("error", "未找到UUID对应的指标: " + metricUuid);
+                        return ResponseEntity.badRequest().body(result);
+                    }
+                }
+            }
+            
+            if (metricIdentifier == null || metricIdentifier.isEmpty()) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("success", false);
+                result.put("error", "必须提供metric或metricUuid参数");
+                return ResponseEntity.badRequest().body(result);
+            }
+            
+            List<MetricValue> history = timeSeriesDataService.getMetricHistory(metricIdentifier, start, end);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("metric", metricIdentifier);
+            result.put("startTime", start);
+            result.put("endTime", end);
+            result.put("count", history.size());
+            result.put("data", history);
+            
+            return ResponseEntity.ok(result);
+            
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "查询历史数据失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            e.printStackTrace(); // 添加调试日志
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("success", false);
+            errorResult.put("error", "查询历史数据失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResult);
         }
     }
 
     /**
-     * 批量查询最新指标值
+     * 查询指标最新值
+     * GET /api/timeseries/latest?metric=xxx
      */
-    @PostMapping("/latest/batch")
-    public ResponseEntity<Map<String, Object>> getLatestMetricValues(@RequestBody List<String> identifiers) {
-        Map<String, Object> response = new HashMap<>();
+    @GetMapping("/latest")
+    public ResponseEntity<Map<String, Object>> getLatestMetricValue(@RequestParam String metric) {
         try {
-            Map<String, MetricValue> values = timeSeriesDataService.getLatestMetricValues(identifiers);
-            response.put("success", true);
-            response.put("data", values);
-            response.put("count", values.size());
-            response.put("timestamp", LocalDateTime.now());
-            return ResponseEntity.ok(response);
+            MetricValue value = timeSeriesDataService.getLatestMetricValue(metric);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("metric", metric);
+            result.put("value", value);
+            
+            return ResponseEntity.ok(result);
+            
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "批量查询失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("success", false);
+            errorResult.put("error", "查询最新值失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResult);
+        }
+    }
+
+    /**
+     * 批量查询最新值
+     * POST /api/timeseries/latest-batch
+     */
+    @PostMapping("/latest-batch")
+    public ResponseEntity<Map<String, Object>> getLatestMetricValues(@RequestBody List<String> metrics) {
+        try {
+            Map<String, MetricValue> values = timeSeriesDataService.getLatestMetricValues(metrics);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("count", values.size());
+            result.put("data", values);
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("success", false);
+            errorResult.put("error", "批量查询失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResult);
         }
     }
 
     /**
      * 获取指标统计信息
+     * GET /api/timeseries/statistics?metric=xxx&range=1h
      */
-    @GetMapping("/statistics/{identifier}")
+    @GetMapping("/statistics")
     public ResponseEntity<Map<String, Object>> getMetricStatistics(
-            @PathVariable String identifier,
-            @RequestParam(defaultValue = "1h") String timeRange) {
+            @RequestParam String metric,
+            @RequestParam(defaultValue = "1h") String range) {
         
-        Map<String, Object> response = new HashMap<>();
         try {
-            Map<String, Object> statistics = timeSeriesDataService.getMetricStatistics(identifier, timeRange);
-            response.put("success", true);
-            response.put("data", statistics);
-            response.put("timeRange", timeRange);
-            return ResponseEntity.ok(response);
+            Map<String, Object> stats = timeSeriesDataService.getMetricStatistics(metric, range);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("metric", metric);
+            result.put("range", range);
+            result.put("statistics", stats);
+            
+            return ResponseEntity.ok(result);
+            
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "获取统计信息失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("success", false);
+            errorResult.put("error", "获取统计信息失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResult);
         }
     }
 
     /**
-     * 查询指标趋势数据
+     * 获取存储统计信息
+     * GET /api/timeseries/storage-stats
      */
-    @GetMapping("/trend/{identifier}")
-    public ResponseEntity<Map<String, Object>> getMetricTrend(
-            @PathVariable String identifier,
-            @RequestParam(defaultValue = "1d") String timeRange,
-            @RequestParam(defaultValue = "1h") String interval) {
-        
-        Map<String, Object> response = new HashMap<>();
+    @GetMapping("/storage-stats")
+    public ResponseEntity<Map<String, Object>> getStorageStats() {
         try {
-            // TODO: 实现趋势数据查询
-            response.put("success", true);
-            response.put("message", "趋势数据查询功能待实现");
-            response.put("parameters", Map.of(
-                "identifier", identifier,
-                "timeRange", timeRange,
-                "interval", interval
-            ));
-            return ResponseEntity.ok(response);
+            Map<String, Object> stats = timeSeriesDataService.getStorageStats();
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("storageStats", stats);
+            
+            return ResponseEntity.ok(result);
+            
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "查询趋势数据失败: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("success", false);
+            errorResult.put("error", "获取存储统计失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResult);
         }
     }
 
     /**
-     * 获取支持的统计时间范围
+     * 清空所有时序数据
+     * POST /api/timeseries/clear
      */
-    @GetMapping("/time-ranges")
-    public ResponseEntity<Map<String, Object>> getSupportedTimeRanges() {
-        Map<String, Object> response = new HashMap<>();
-        List<String> timeRanges = List.of(
-            "5m", "15m", "30m", "1h", "4h", "12h", "1d", "3d", "7d", "30d"
-        );
+    @PostMapping("/clear")
+    public ResponseEntity<Map<String, Object>> clearAllData() {
+        try {
+            timeSeriesDataService.clearAllData();
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "所有时序数据已清空");
+            result.put("timestamp", LocalDateTime.now());
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("success", false);
+            errorResult.put("error", "清空数据失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResult);
+        }
+    }
+
+    /**
+     * 健康检查
+     * GET /api/timeseries/health
+     */
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", "UP");
+        result.put("service", "Time Series Data Service");
+        result.put("timestamp", LocalDateTime.now());
         
-        response.put("success", true);
-        response.put("data", timeRanges);
-        response.put("description", "支持的时间范围格式");
+        try {
+            Map<String, Object> storageStats = timeSeriesDataService.getStorageStats();
+            result.put("storageStats", storageStats);
+        } catch (Exception e) {
+            result.put("storageStats", "Error: " + e.getMessage());
+        }
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(result);
     }
 }

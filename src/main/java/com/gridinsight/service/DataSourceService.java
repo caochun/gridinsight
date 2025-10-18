@@ -2,7 +2,10 @@ package com.gridinsight.service;
 
 import com.gridinsight.domain.model.DataSource;
 import com.gridinsight.domain.model.MetricValue;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -32,21 +35,8 @@ public class DataSourceService {
             return MetricValue.error("", "数据源未配置或已禁用");
         }
         
-        // 检查缓存
-        String cacheKey = dataSource.getSourceAddress();
-        MetricValue cachedValue = dataCache.get(cacheKey);
-        if (cachedValue != null && isCacheValid(cachedValue)) {
-            return cachedValue;
-        }
-        
         try {
             MetricValue result = fetchDataFromSource(dataSource);
-            
-            // 缓存结果
-            if (result.isValid()) {
-                dataCache.put(cacheKey, result);
-            }
-            
             return result;
             
         } catch (Exception e) {
@@ -76,12 +66,38 @@ public class DataSourceService {
      * 从HTTP API获取数据
      */
     private MetricValue fetchFromHttpApi(DataSource dataSource) {
-        // 模拟HTTP API调用
         try {
-            // 这里应该实现真实的HTTP调用
-            // 暂时返回模拟数据
-            Double value = generateMockValue(dataSource);
-            return MetricValue.good("", value, "");
+            String url = dataSource.getSourceAddress();
+            if (url == null || url.isEmpty()) {
+                return MetricValue.error("", "HTTP API地址未配置");
+            }
+            
+            // 创建HTTP客户端
+            RestTemplate restTemplate = new RestTemplate();
+            
+            // 设置超时时间
+            HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+            factory.setConnectTimeout(5000); // 5秒连接超时
+            factory.setReadTimeout(10000);   // 10秒读取超时
+            restTemplate.setRequestFactory(factory);
+            
+            // 处理URL中的时间戳参数
+            String finalUrl = url.replace("${timestamp}", String.valueOf(System.currentTimeMillis()));
+            
+            // 发送HTTP请求
+            ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                // 解析响应数据
+                String responseBody = response.getBody().trim();
+                Double value = Double.parseDouble(responseBody);
+                return MetricValue.good("", value, "");
+            } else {
+                return MetricValue.error("", "HTTP API返回错误状态: " + response.getStatusCode());
+            }
+            
+        } catch (NumberFormatException e) {
+            return MetricValue.error("", "HTTP API返回数据格式错误: " + e.getMessage());
         } catch (Exception e) {
             return MetricValue.error("", "HTTP API调用失败: " + e.getMessage());
         }

@@ -1,6 +1,7 @@
 package com.gridinsight.service;
 
 import com.gridinsight.domain.model.MetricValue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -10,9 +11,13 @@ import java.util.Map;
 /**
  * 时序数据服务
  * 负责指标的时序数据存储和查询
+ * 基于JSON文件实现高性能本地存储
  */
 @Service
 public class TimeSeriesDataService {
+
+    @Autowired
+    private JsonTimeSeriesDataService jsonTimeSeriesService;
 
     /**
      * 存储指标值到时序数据库
@@ -21,16 +26,14 @@ public class TimeSeriesDataService {
      * @param timestamp 时间戳
      */
     public void storeMetricValue(String metricIdentifier, MetricValue value, LocalDateTime timestamp) {
-        // TODO: 实现时序数据库存储逻辑
-        // 可以使用 InfluxDB, TimescaleDB, ClickHouse 等
-        // 存储指标值
+        jsonTimeSeriesService.storeMetricValue(metricIdentifier, value, timestamp);
     }
 
     /**
      * 清空所有时序数据 (仅用于测试)
      */
     public void clearAllData() {
-        // 清空所有时序数据
+        jsonTimeSeriesService.clearAllData();
     }
 
     /**
@@ -39,9 +42,7 @@ public class TimeSeriesDataService {
      * @param timestamp 时间戳
      */
     public void storeMetricValues(Map<String, MetricValue> values, LocalDateTime timestamp) {
-        for (Map.Entry<String, MetricValue> entry : values.entrySet()) {
-            storeMetricValue(entry.getKey(), entry.getValue(), timestamp);
-        }
+        jsonTimeSeriesService.storeMetricValues(values, timestamp);
     }
 
     /**
@@ -50,9 +51,7 @@ public class TimeSeriesDataService {
      * @return 最新指标值
      */
     public MetricValue getLatestMetricValue(String metricIdentifier) {
-        // TODO: 从时序数据库查询最新值
-        // 查询最新指标值
-        return MetricValue.good(metricIdentifier, 0.0, "");
+        return jsonTimeSeriesService.getLatestMetricValue(metricIdentifier);
     }
 
     /**
@@ -63,9 +62,7 @@ public class TimeSeriesDataService {
      * @return 历史数据列表
      */
     public List<MetricValue> getMetricHistory(String metricIdentifier, LocalDateTime startTime, LocalDateTime endTime) {
-        // TODO: 从时序数据库查询历史数据
-        // 查询历史数据
-        return List.of();
+        return jsonTimeSeriesService.getMetricHistory(metricIdentifier, startTime, endTime);
     }
 
     /**
@@ -74,9 +71,7 @@ public class TimeSeriesDataService {
      * @return 指标值映射
      */
     public Map<String, MetricValue> getLatestMetricValues(List<String> metricIdentifiers) {
-        // TODO: 批量查询最新值
-        // 批量查询指标值
-        return Map.of();
+        return jsonTimeSeriesService.getLatestMetricValues(metricIdentifiers);
     }
 
     /**
@@ -86,8 +81,14 @@ public class TimeSeriesDataService {
      * @return 统计信息（平均值、最大值、最小值等）
      */
     public Map<String, Object> getMetricStatistics(String metricIdentifier, String timeRange) {
-        // TODO: 计算统计信息
-        // 获取统计信息
-        return Map.of();
+        return jsonTimeSeriesService.getMetricStatistics(metricIdentifier, timeRange);
+    }
+
+    /**
+     * 获取存储统计信息
+     * @return 存储统计信息
+     */
+    public Map<String, Object> getStorageStats() {
+        return jsonTimeSeriesService.getStorageStats();
     }
 }

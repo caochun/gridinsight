@@ -7,6 +7,7 @@ derivedMetrics:
     subCategory: "拓扑关系准确率"
     unit: "%"
     description: "中压拓扑关系准确率计算"
+    uuid: "550e8400-e29b-41d4-a716-44665544100"
     formula: "(1 - 中压拓扑.拓扑不一致.配变挂接馈线不一致数量 / 中压拓扑.配变统计.配变总数) * 100"
     updateStrategy: "DEPENDENCY_DRIVEN"
     dependencies:
@@ -19,6 +20,7 @@ derivedMetrics:
     subCategory: "变户关系准确率"
     unit: "%"
     description: "变户关系准确率计算"
+    uuid: "550e8400-e29b-41d4-a716-44665544101"
     formula: "(1 - 低压用户关系.变户关系错误.变户关系不正确的低压用户数 / 低压用户关系.低压用户统计.全省低压用户总数) * 100"
     updateStrategy: "DEPENDENCY_DRIVEN"
     dependencies:
@@ -31,6 +33,7 @@ derivedMetrics:
     subCategory: "综合质量指标"
     unit: "%"
     description: "综合质量指标计算"
+    uuid: "550e8400-e29b-41d4-a716-44665544102"
     formula: "sqrt(中压拓扑.拓扑关系准确率.拓扑关系准确率 * 低压用户关系.变户关系准确率.变户关系准确率)"
     updateStrategy: "SCHEDULED"
     calculationInterval: 900
@@ -44,6 +47,7 @@ derivedMetrics:
     subCategory: "计算"
     unit: "个"
     description: "计算两个指标的平均值"
+    uuid: "550e8400-e29b-41d4-a716-44665544103"
     formula: "(测试.MQTT.实时功率 + 测试.数据库.历史负荷) / 2"
     dependencies:
       - "测试.MQTT.实时功率"
@@ -55,6 +59,7 @@ derivedMetrics:
     subCategory: "计算"
     unit: "个"
     description: "计算两个指标的最大值"
+    uuid: "550e8400-e29b-41d4-a716-44665544104"
     formula: "max(测试.MQTT.实时功率, 测试.数据库.历史负荷)"
     dependencies:
       - "测试.MQTT.实时功率"
@@ -66,6 +71,7 @@ derivedMetrics:
     subCategory: "计算"
     unit: "个"
     description: "计算两个指标的最小值"
+    uuid: "550e8400-e29b-41d4-a716-44665544105"
     formula: "min(测试.MQTT.实时功率, 测试.数据库.历史负荷)"
     dependencies:
       - "测试.MQTT.实时功率"
@@ -77,6 +83,7 @@ derivedMetrics:
     subCategory: "计算"
     unit: "个"
     description: "计算指标的平方根"
+    uuid: "550e8400-e29b-41d4-a716-44665544106"
     formula: "sqrt(测试.MQTT.实时功率)"
     dependencies:
       - "测试.MQTT.实时功率"
@@ -87,6 +94,7 @@ derivedMetrics:
     subCategory: "计算"
     unit: "个"
     description: "计算指标的绝对值"
+    uuid: "550e8400-e29b-41d4-a716-44665544107"
     formula: "abs(-测试.MQTT.实时功率)"
     dependencies:
       - "测试.MQTT.实时功率"

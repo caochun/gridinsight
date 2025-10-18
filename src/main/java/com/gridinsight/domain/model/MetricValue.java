@@ -1,12 +1,18 @@
 package com.gridinsight.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
  * 指标值类
  * 表示指标在特定时间点的数值
+ * 支持JSON序列化
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MetricValue {
     
     /**
@@ -27,6 +33,7 @@ public class MetricValue {
     /**
      * 数据时间戳
      */
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
     
     /**

@@ -61,19 +61,13 @@ public class MetricCalculationService {
     }
     
     /**
-     * 计算派生指标值
+     * 计算派生指标值（禁用缓存）
      * @param metricIdentifier 指标标识符
      * @return 指标值
      */
     public MetricValue calculateMetric(String metricIdentifier) {
         if (metricIdentifier == null || metricIdentifier.trim().isEmpty()) {
             return MetricValue.error("", "指标标识符不能为空");
-        }
-        
-        // 检查缓存
-        MetricValue cachedValue = valueCache.get(metricIdentifier);
-        if (cachedValue != null && isCacheValid(cachedValue)) {
-            return cachedValue;
         }
         
         Metric metric = metrics.get(metricIdentifier);
@@ -88,11 +82,6 @@ public class MetricCalculationService {
             result = calculateDerivedMetric((DerivedMetric) metric);
         } else {
             result = MetricValue.error(metricIdentifier, "未知的指标类型");
-        }
-        
-        // 缓存结果
-        if (result.isValid()) {
-            valueCache.put(metricIdentifier, result);
         }
         
         return result;
@@ -219,16 +208,6 @@ public class MetricCalculationService {
         }
     }
     
-    /**
-     * 检查缓存是否有效
-     * @param cachedValue 缓存的值
-     * @return true 如果缓存有效
-     */
-    private boolean isCacheValid(MetricValue cachedValue) {
-        // 简单的缓存策略：5分钟内的数据认为有效
-        return cachedValue.getTimestamp().isAfter(
-            java.time.LocalDateTime.now().minusMinutes(5));
-    }
     
     /**
      * 获取缓存统计信息

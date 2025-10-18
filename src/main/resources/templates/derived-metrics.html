@@ -87,6 +87,10 @@
                             <code th:text="${entry.key}">分类.子分类.指标名称</code>
                         </div>
                         <div class="mb-2">
+                            <small class="text-muted">UUID:</small><br>
+                            <code class="text-success" th:text="${entry.value.uuid}">550e8400-e29b-41d4-a716-446655440001</code>
+                        </div>
+                        <div class="mb-2">
                             <small class="text-muted">分类:</small><br>
                             <span th:text="${entry.value.category}">分类</span> / 
                             <span th:text="${entry.value.subCategory}">子分类</span>
@@ -222,6 +226,7 @@
                                     <table class="table table-sm">
                                         <tr><td><strong>名称:</strong></td><td>${metric.name}</td></tr>
                                         <tr><td><strong>标识符:</strong></td><td><code>${identifier}</code></td></tr>
+                                        <tr><td><strong>UUID:</strong></td><td><code class="text-success">${metric.uuid || '-'}</code></td></tr>
                                         <tr><td><strong>分类:</strong></td><td>${metric.category}</td></tr>
                                         <tr><td><strong>子分类:</strong></td><td>${metric.subCategory}</td></tr>
                                         <tr><td><strong>单位:</strong></td><td><span class="badge bg-secondary">${metric.unit}</span></td></tr>

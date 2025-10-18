@@ -7,6 +7,7 @@ basicMetrics:
     subCategory: "配变统计"
     unit: "个"
     description: "中压配变总数统计"
+    uuid: "550e8400-e29b-41d4-a716-446655440001"
     dataSource:
       sourceType: "HTTP_API"
       sourceAddress: "http://api.example.com/transformer/count"
@@ -20,6 +21,7 @@ basicMetrics:
     subCategory: "拓扑不一致"
     unit: "个"
     description: "配变挂接馈线不一致的数量"
+    uuid: "550e8400-e29b-41d4-a716-446655440002"
     dataSource:
       sourceType: "HTTP_API"
       sourceAddress: "http://api.example.com/topology/inconsistency"
@@ -33,6 +35,7 @@ basicMetrics:
     subCategory: "低压用户统计"
     unit: "户"
     description: "全省低压用户总数统计"
+    uuid: "550e8400-e29b-41d4-a716-446655440003"
     dataSource:
       sourceType: "HTTP_API"
       sourceAddress: "http://api.example.com/user/count"
@@ -46,6 +49,7 @@ basicMetrics:
     subCategory: "变户关系错误"
     unit: "户"
     description: "变户关系不正确的低压用户数量"
+    uuid: "550e8400-e29b-41d4-a716-44665544000004"
     dataSource:
       sourceType: "HTTP_API"
       sourceAddress: "http://api.example.com/relation/error"
@@ -59,11 +63,12 @@ basicMetrics:
     subCategory: "MQTT"
     unit: "kW"
     description: "通过MQTT获取的实时功率数据"
+    uuid: "550e8400-e29b-41d4-a716-44665544000005"
     dataSource:
       sourceType: "MQTT"
       sourceAddress: "mqtt://broker.example.com:1883/topic/power"
       sourceName: "功率MQTT主题"
-      refreshInterval: 60
+      samplingInterval: 5
       enabled: true
 
   "测试.数据库.历史负荷":
@@ -72,6 +77,7 @@ basicMetrics:
     subCategory: "数据库"
     unit: "MW"
     description: "从SQLite数据库获取的历史负荷数据"
+    uuid: "550e8400-e29b-41d4-a716-44665544000006"
     dataSource:
       sourceType: "DATABASE"
       config:
@@ -90,6 +96,7 @@ basicMetrics:
     subCategory: "数据库"
     unit: "个"
     description: "从SQLite数据库获取的配变总数"
+    uuid: "550e8400-e29b-41d4-a716-44665544000007"
     dataSource:
       sourceType: "DATABASE"
       config:
@@ -108,6 +115,7 @@ basicMetrics:
     subCategory: "数据库"
     unit: "户"
     description: "从SQLite数据库获取的用户总数"
+    uuid: "550e8400-e29b-41d4-a716-44665544000008"
     dataSource:
       sourceType: "DATABASE"
       config:
@@ -126,9 +134,24 @@ basicMetrics:
     subCategory: "文件"
     unit: "个"
     description: "从文件读取的配置信息"
+    uuid: "550e8400-e29b-41d4-a716-44665544000009"
     dataSource:
       sourceType: "FILE"
       sourceAddress: "/data/config/metrics.json"
       sourceName: "配置文件"
       refreshInterval: 1800
+      enabled: true
+
+  "测试.HTTP.随机数":
+    name: "随机数"
+    category: "测试"
+    subCategory: "HTTP"
+    unit: "个"
+    description: "从random.org获取的0-100随机整数"
+    uuid: "550e8400-e29b-41d4-a716-44665544000010"
+    dataSource:
+      sourceType: "HTTP_API"
+      sourceAddress: "https://www.random.org/integers/?num=1&min=0&max=100&col=1&base=10&format=plain&rnd=new&timestamp=${timestamp}"
+      sourceName: "Random.org API"
+      refreshInterval: 2
       enabled: true

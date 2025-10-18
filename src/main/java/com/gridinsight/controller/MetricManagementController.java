@@ -413,9 +413,18 @@ public class MetricManagementController {
      */
     @GetMapping("/api")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> getMetricDetailsByParam(@RequestParam("identifier") String identifier) {
+    public ResponseEntity<Map<String, Object>> getMetricDetailsByParam(
+            @RequestParam(value = "identifier", required = false) String identifier,
+            @RequestParam(value = "uuid", required = false) String uuid) {
         Map<String, Object> response = new HashMap<>();
-        Metric metric = metricConfigService.getMetric(identifier);
+        Metric metric = null;
+        
+        // 优先使用UUID查询，如果没有UUID则使用identifier
+        if (uuid != null && !uuid.trim().isEmpty()) {
+            metric = metricConfigService.getMetricByUuid(uuid);
+        } else if (identifier != null && !identifier.trim().isEmpty()) {
+            metric = metricConfigService.getMetric(identifier);
+        }
 
         if (metric != null) {
             response.put("success", true);

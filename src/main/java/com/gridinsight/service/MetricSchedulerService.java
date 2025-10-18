@@ -1,7 +1,6 @@
 package com.gridinsight.service;
 
 import com.gridinsight.domain.model.*;
-import com.gridinsight.domain.service.MetricCalculationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,13 +22,16 @@ public class MetricSchedulerService {
     private MetricConfigService metricConfigService;
     
     @Autowired
-    private MetricCalculationService metricCalculationService;
+    private DataSourceService dataSourceService;
     
     @Autowired
     private TimeSeriesDataService timeSeriesDataService;
     
     @Autowired
     private EventDrivenMetricUpdateService eventDrivenUpdateService;
+    
+    @Autowired
+    private MetricEventPublisher metricEventPublisher;
     
 
     // 指标最后更新时间记录
@@ -39,14 +41,17 @@ public class MetricSchedulerService {
     private final Map<String, AtomicLong> updateCounters = new ConcurrentHashMap<>();
 
     /**
-     * 定时任务：每分钟检查需要更新的指标
+     * 定时任务：每1秒检查需要更新的指标
      */
-    @Scheduled(fixedRate = 60000) // 每分钟执行一次
+    @Scheduled(fixedRate = 1000) // 每1秒执行一次
     public void scheduleMetricUpdates() {
         LocalDateTime now = LocalDateTime.now();
         
         // 获取所有基础指标
         Map<String, BasicMetric> basicMetrics = metricConfigService.getAllBasicMetrics();
+        
+        // 调试日志：显示调度器正在运行
+        System.out.println("调度器运行中，当前时间: " + now + ", 基础指标数量: " + basicMetrics.size());
         
         for (Map.Entry<String, BasicMetric> entry : basicMetrics.entrySet()) {
             String identifier = entry.getKey();
@@ -54,10 +59,17 @@ public class MetricSchedulerService {
             DataSource dataSource = metric.getDataSource();
             
             if (dataSource != null && dataSource.getEnabled()) {
-                // 检查是否需要更新
-                if (shouldUpdateMetric(identifier, dataSource.getRefreshInterval(), now)) {
-                    // 异步更新指标
-                    updateBasicMetricAsync(identifier, metric);
+                // 根据数据源类型决定更新策略
+                if (dataSource.isActiveDataSource()) {
+                    // 主动获取类数据源：检查刷新间隔
+                    if (shouldUpdateMetric(identifier, dataSource.getRefreshInterval(), now)) {
+                        updateActiveDataSourceMetric(identifier, metric);
+                    }
+                } else if (dataSource.isPassiveDataSource()) {
+                    // 被动订阅类数据源：检查采样间隔
+                    if (shouldUpdateMetric(identifier, dataSource.getSamplingInterval(), now)) {
+                        updatePassiveDataSourceMetric(identifier, metric);
+                    }
                 }
             }
         }
@@ -95,18 +107,26 @@ public class MetricSchedulerService {
 
 
     /**
-     * 异步更新基础指标值
+     * 更新主动获取类数据源指标
      */
     @Async
-    public void updateBasicMetricAsync(String identifier, BasicMetric metric) {
+    public void updateActiveDataSourceMetric(String identifier, BasicMetric metric) {
         try {
-            // 开始更新指标
+            System.out.println("开始更新主动获取类指标: " + identifier);
             
-            // 计算指标值
-            MetricValue value = metricCalculationService.calculateMetric(identifier);
+            // 直接从数据源获取数据
+            MetricValue value = dataSourceService.fetchData(metric.getDataSource());
             
             if (value.isValid()) {
-                // 存储到时序数据库
+                // 设置正确的标识符
+                value.setMetricIdentifier(identifier);
+                
+                // 获取旧值用于比较
+                MetricValue oldValue = timeSeriesDataService.getLatestMetricValue(identifier);
+                Double oldValueDouble = (oldValue != null && oldValue.isValid()) ? oldValue.getValue() : null;
+                Double newValueDouble = value.getValue();
+                
+                // 直接存储到时序数据库
                 timeSeriesDataService.storeMetricValue(identifier, value, LocalDateTime.now());
                 
                 // 更新最后更新时间
@@ -115,47 +135,99 @@ public class MetricSchedulerService {
                 // 更新计数器
                 updateCounters.computeIfAbsent(identifier, k -> new AtomicLong(0)).incrementAndGet();
                 
-                // 🎯 关键改进：发布指标更新事件，主动触发依赖的派生指标更新
+                // 检查值是否发生变化，如果变化则发布事件
+                if (oldValueDouble == null) {
+                    // 首次设置值
+                    metricEventPublisher.publishFirstValue(identifier, metric.getUuid(), newValueDouble);
+                } else if (!oldValueDouble.equals(newValueDouble)) {
+                    // 值发生变化
+                    metricEventPublisher.publishValueChanged(identifier, metric.getUuid(), 
+                                                           oldValueDouble, newValueDouble);
+                }
+                
+                // 发布指标更新事件，触发依赖的派生指标更新（保持向后兼容）
                 eventDrivenUpdateService.publishMetricUpdateEvent(identifier, value.getValue(), "BASIC_METRIC_UPDATE");
                 
-                // 指标更新成功
+                System.out.println("主动获取类指标更新成功: " + identifier + ", 值: " + value.getValue());
             } else {
-                // 指标计算失败
+                System.out.println("主动获取类指标更新失败: " + identifier + ", 错误: " + value.getQuality());
             }
             
         } catch (Exception e) {
-            // 指标更新异常，记录日志但不中断流程
+            System.out.println("主动获取类指标更新异常: " + identifier + ", 错误: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 更新被动订阅类数据源指标
+     */
+    @Async
+    public void updatePassiveDataSourceMetric(String identifier, BasicMetric metric) {
+        try {
+            System.out.println("开始更新被动订阅类指标: " + identifier);
+            
+            // 对于MQTT等被动订阅类数据源，这里应该从订阅的数据流中采样
+            // 目前先模拟从数据源获取数据（实际应该从MQTT订阅缓存中获取）
+            MetricValue value = dataSourceService.fetchData(metric.getDataSource());
+            
+            if (value.isValid()) {
+                // 设置正确的标识符
+                value.setMetricIdentifier(identifier);
+                
+                // 获取旧值用于比较
+                MetricValue oldValue = timeSeriesDataService.getLatestMetricValue(identifier);
+                Double oldValueDouble = (oldValue != null && oldValue.isValid()) ? oldValue.getValue() : null;
+                Double newValueDouble = value.getValue();
+                
+                // 直接存储到时序数据库
+                timeSeriesDataService.storeMetricValue(identifier, value, LocalDateTime.now());
+                
+                // 更新最后更新时间
+                lastUpdateTimes.put(identifier, LocalDateTime.now());
+                
+                // 更新计数器
+                updateCounters.computeIfAbsent(identifier, k -> new AtomicLong(0)).incrementAndGet();
+                
+                // 检查值是否发生变化，如果变化则发布事件
+                if (oldValueDouble == null) {
+                    // 首次设置值
+                    metricEventPublisher.publishFirstValue(identifier, metric.getUuid(), newValueDouble);
+                } else if (!oldValueDouble.equals(newValueDouble)) {
+                    // 值发生变化
+                    metricEventPublisher.publishValueChanged(identifier, metric.getUuid(), 
+                                                           oldValueDouble, newValueDouble);
+                }
+                
+                // 发布指标更新事件，触发依赖的派生指标更新（保持向后兼容）
+                eventDrivenUpdateService.publishMetricUpdateEvent(identifier, value.getValue(), "BASIC_METRIC_UPDATE");
+                
+                System.out.println("被动订阅类指标更新成功: " + identifier + ", 值: " + value.getValue());
+            } else {
+                System.out.println("被动订阅类指标更新失败: " + identifier + ", 错误: " + value.getQuality());
+            }
+            
+        } catch (Exception e) {
+            System.out.println("被动订阅类指标更新异常: " + identifier + ", 错误: " + e.getMessage());
         }
     }
 
     /**
      * 异步更新派生指标值
+     * 注意：派生指标的计算仍然需要通过计算服务，因为需要从时序数据库读取依赖指标的值
      */
     @Async
     public void updateDerivedMetricAsync(String identifier, DerivedMetric metric) {
         try {
-            // 开始更新派生指标
+            System.out.println("开始更新派生指标: " + identifier);
             
-            // 计算派生指标值
-            MetricValue value = metricCalculationService.calculateMetric(identifier);
+            // 派生指标需要从时序数据库读取依赖指标的值进行计算
+            // 这里暂时保留通过计算服务的逻辑，但未来可以优化为直接从时序数据库读取
+            // 目前先跳过，因为需要重构计算服务
             
-            if (value.isValid()) {
-                // 存储到时序数据库
-                timeSeriesDataService.storeMetricValue(identifier, value, LocalDateTime.now());
-                
-                // 更新最后更新时间
-                lastUpdateTimes.put(identifier, LocalDateTime.now());
-                
-                // 更新计数器
-                updateCounters.computeIfAbsent(identifier, k -> new AtomicLong(0)).incrementAndGet();
-                
-                // 派生指标更新成功
-            } else {
-                // 派生指标计算失败
-            }
+            System.out.println("派生指标更新跳过（需要重构计算服务）: " + identifier);
             
         } catch (Exception e) {
-            // 派生指标更新异常，记录日志但不中断流程
+            System.out.println("派生指标更新异常: " + identifier + ", 错误: " + e.getMessage());
         }
     }
 
@@ -165,7 +237,15 @@ public class MetricSchedulerService {
     public void triggerMetricUpdate(String identifier) {
         Metric metric = metricConfigService.getMetric(identifier);
         if (metric instanceof BasicMetric) {
-            updateBasicMetricAsync(identifier, (BasicMetric) metric);
+            BasicMetric basicMetric = (BasicMetric) metric;
+            DataSource dataSource = basicMetric.getDataSource();
+            if (dataSource != null && dataSource.getEnabled()) {
+                if (dataSource.isActiveDataSource()) {
+                    updateActiveDataSourceMetric(identifier, basicMetric);
+                } else if (dataSource.isPassiveDataSource()) {
+                    updatePassiveDataSourceMetric(identifier, basicMetric);
+                }
+            }
         } else if (metric instanceof DerivedMetric) {
             updateDerivedMetricAsync(identifier, (DerivedMetric) metric);
         } else {
