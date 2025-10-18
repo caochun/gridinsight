@@ -9,7 +9,6 @@ derivedMetrics:
     description: "中压拓扑关系准确率计算"
     uuid: "550e8400-e29b-41d4-a716-44665544100"
     formula: "(1 - 中压拓扑.拓扑不一致.配变挂接馈线不一致数量 / 中压拓扑.配变统计.配变总数) * 100"
-    updateStrategy: "DEPENDENCY_DRIVEN"
     dependencies:
       - "中压拓扑.配变统计.配变总数"
       - "中压拓扑.拓扑不一致.配变挂接馈线不一致数量"
@@ -22,7 +21,6 @@ derivedMetrics:
     description: "变户关系准确率计算"
     uuid: "550e8400-e29b-41d4-a716-44665544101"
     formula: "(1 - 低压用户关系.变户关系错误.变户关系不正确的低压用户数 / 低压用户关系.低压用户统计.全省低压用户总数) * 100"
-    updateStrategy: "DEPENDENCY_DRIVEN"
     dependencies:
       - "低压用户关系.低压用户统计.全省低压用户总数"
       - "低压用户关系.变户关系错误.变户关系不正确的低压用户数"
@@ -35,8 +33,6 @@ derivedMetrics:
     description: "综合质量指标计算"
     uuid: "550e8400-e29b-41d4-a716-44665544102"
     formula: "sqrt(中压拓扑.拓扑关系准确率.拓扑关系准确率 * 低压用户关系.变户关系准确率.变户关系准确率)"
-    updateStrategy: "SCHEDULED"
-    calculationInterval: 900
     dependencies:
       - "中压拓扑.拓扑关系准确率.拓扑关系准确率"
       - "低压用户关系.变户关系准确率.变户关系准确率"
@@ -109,4 +105,3 @@ derivedMetrics:
     formula: "测试.HTTP.随机数 * 测试.HTTP.随机数"
     dependencies:
       - "测试.HTTP.随机数"
-    updateStrategy: "DEPENDENCY_DRIVEN"
