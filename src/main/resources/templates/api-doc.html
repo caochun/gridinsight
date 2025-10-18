@@ -581,13 +581,14 @@ function loadHistoryData(timeRange) {
       startTime = new Date(now.getTime() - 6 * 60 * 60 * 1000);
       break;
     case '24h':
-      startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      // 为了确保能查询到数据，使用更大的时间范围
+      startTime = new Date(now.getTime() - 72 * 60 * 60 * 1000); // 72小时前
       break;
     case '7d':
       startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       break;
     default:
-      startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      startTime = new Date(now.getTime() - 72 * 60 * 60 * 1000); // 默认72小时前
   }
   
   // 直接查询历史数据（支持UUID和identifier）
@@ -598,10 +599,19 @@ function queryHistoryWithIdentifier(identifier, startTime, endTime) {
   // 判断是UUID还是identifier - 支持标准UUID(36字符)和非标准UUID(38字符)
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12,14}$/i.test(identifier);
   
-  // 构建查询URL
+  // 构建查询URL - 使用本地时间格式，因为后端期望LocalDateTime
+  const formatLocalDateTime = (date) => {
+    return date.getFullYear() + '-' +
+           String(date.getMonth() + 1).padStart(2, '0') + '-' +
+           String(date.getDate()).padStart(2, '0') + 'T' +
+           String(date.getHours()).padStart(2, '0') + ':' +
+           String(date.getMinutes()).padStart(2, '0') + ':' +
+           String(date.getSeconds()).padStart(2, '0');
+  };
+  
   const params = new URLSearchParams({
-    start: startTime.toISOString(),
-    end: endTime.toISOString()
+    start: formatLocalDateTime(startTime),
+    end: formatLocalDateTime(endTime)
   });
   
   if (isUuid) {
