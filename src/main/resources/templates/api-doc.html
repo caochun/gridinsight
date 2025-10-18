@@ -595,8 +595,8 @@ function loadHistoryData(timeRange) {
 }
 
 function queryHistoryWithIdentifier(identifier, startTime, endTime) {
-  // 判断是UUID还是identifier
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+  // 判断是UUID还是identifier - 支持标准UUID(36字符)和非标准UUID(38字符)
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12,14}$/i.test(identifier);
   
   // 构建查询URL
   const params = new URLSearchParams({
