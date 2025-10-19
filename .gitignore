@@ -232,3 +232,63 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+
+# GridInsight specific
+# 时序数据文件（运行时生成，不应提交到版本控制）
+data/timeseries/*.json
+!data/timeseries/.gitkeep
+
+# 数据库文件（运行时生成）
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# 配置文件备份
+config/*.bak
+config/*.backup
+config/*.old
+
+# 日志文件
+logs/
+*.log
+*.log.*
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 运行时生成的文件
+*.pid
+*.lock
+*.sock
+
+# 测试数据
+test-data/
+test-output/
+test-results/
+
+# 性能分析文件
+*.hprof
+*.jfr
+
+# 安全相关文件
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+
+# 环境变量文件
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# 应用特定配置
+application-local.properties
+application-dev.properties
+application-prod.properties
