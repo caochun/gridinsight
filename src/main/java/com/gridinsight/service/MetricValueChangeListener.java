@@ -22,7 +22,7 @@ import java.util.Map;
 public class MetricValueChangeListener {
     
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
     
     @Autowired
     private TimeSeriesDataService timeSeriesDataService;

@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 版本号: v3.0 - 简化版 -->
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -37,22 +38,12 @@
 
     <div class="mb-4">
         <h5>查询单个指标值</h5>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <h6>方式1: 使用标识符查询</h6>
-                <pre><code>GET /api/metrics/query?identifier=分类.子分类.指标名称</code></pre>
-                <div class="input-group">
-                    <input id="single-id" class="form-control" placeholder="输入指标标识符">
-                    <button class="btn btn-outline-primary" onclick="querySingle()">查询</button>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <h6>方式2: 使用UUID查询 (推荐)</h6>
-                <pre><code>GET /api/metrics/query-by-uuid?uuid=550e8400-e29b-41d4-a716-446655440001</code></pre>
-                <div class="input-group">
-                    <input id="single-uuid" class="form-control" placeholder="输入指标UUID">
-                    <button class="btn btn-outline-success" onclick="querySingleByUuid()">查询</button>
-                </div>
+        <div class="mb-3">
+            <h6>使用UUID查询</h6>
+            <pre><code>GET /api/metrics/query-by-uuid?uuid=550e8400-e29b-41d4-a716-446655440001</code></pre>
+            <div class="input-group">
+                <input id="single-uuid" class="form-control" placeholder="输入指标UUID">
+                <button class="btn btn-outline-success" onclick="querySingleByUuid()">查询</button>
             </div>
         </div>
         
@@ -79,7 +70,7 @@
                         <div class="card">
                             <div class="card-header">实时值</div>
                             <div class="card-body">
-                                <div class="small" id="resp-query"><span class="text-muted">请输入标识符进行查询</span></div>
+                                <div class="small" id="resp-query"><span class="text-muted">请输入UUID进行查询</span></div>
                             </div>
                         </div>
                     </div>
@@ -87,7 +78,7 @@
                         <div class="card">
                             <div class="card-header">指标定义</div>
                             <div class="card-body" id="resp-def-friendly">
-                                <span class="text-muted">请输入标识符进行查询</span>
+                                <span class="text-muted">请输入UUID进行查询</span>
                             </div>
                         </div>
                     </div>
@@ -99,12 +90,11 @@
                 <div class="mt-3">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <span>历史值图表</span>
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn btn-outline-secondary" onclick="loadHistoryData('1h')">1小时</button>
-                                <button type="button" class="btn btn-outline-secondary" onclick="loadHistoryData('6h')">6小时</button>
-                                <button type="button" class="btn btn-outline-secondary" onclick="loadHistoryData('24h')">24小时</button>
-                                <button type="button" class="btn btn-outline-secondary" onclick="loadHistoryData('7d')">7天</button>
+                            <div class="d-flex align-items-center">
+                                <span>历史值图表 (最近2分钟)</span>
+                                <span id="auto-refresh-status" class="badge bg-success ms-2" style="display: none;">
+                                    <i class="bi bi-arrow-clockwise"></i> 自动刷新中
+                                </span>
                             </div>
                         </div>
                         <div class="card-body">
@@ -124,25 +114,6 @@
         </div>
     </div>
 
-    <div class="mb-4">
-        <h5>批量查询指标值</h5>
-        <pre><code>POST /api/metrics/batch-query</code>
-Body: ["标识符1","标识符2"]</pre>
-        <div class="input-group mb-2">
-            <input id="batch-ids" class="form-control" placeholder='例如: ["测试.数据库.配变总数","测试.数据库.用户总数"]'>
-            <button class="btn btn-outline-primary" onclick="queryBatch()">查询</button>
-        </div>
-        <div class="row g-3">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">批量查询结果</div>
-                    <div class="card-body">
-                        <div class="small" id="resp-batch"><span class="text-muted">请输入标识符数组进行查询</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="mb-4">
         <h5>清空缓存</h5>
@@ -198,6 +169,10 @@ Body: ["标识符1","标识符2"]</pre>
 // 全局变量
 let metricChart = null;
 let currentMetricId = null;
+let autoRefreshTimer = null;
+
+// 版本标识 - 简化版
+console.log('API文档页面已加载 - 版本 v3.0');
 
 function tryCall(path){
   fetch(path).then(r=>r.text()).then(t=>{
@@ -226,66 +201,6 @@ function renderRealtimeFriendly(target, data){
     </table>`;
 }
 
-function querySingle(){
-  const id=document.getElementById('single-id').value.trim();
-  if(!id){alert('请输入标识符');return}
-  
-  // 设置当前指标ID，用于历史数据查询
-  currentMetricId = id;
-  
-  // 1) 查询实时值并友好展示
-  fetch('/api/metrics/query?identifier='+encodeURIComponent(id))
-    .then(r=>r.json())
-    .then(data=>{ renderRealtimeFriendly('resp-query', data); })
-    .catch(()=>{ document.getElementById('resp-query').innerHTML='<span class="text-danger">请求失败</span>'; })
-    .then(()=>{
-      // 2) 拉取定义（后台已有管理端API）
-      // 兼容带点/中文标识符，使用查询参数方式
-      return fetch('/admin/metrics/api?identifier='+encodeURIComponent(id))
-        .then(r=>r.json())
-        .then(data=>{
-          const box = document.getElementById('resp-def-friendly');
-          if(!data || !data.success || !data.metric){
-            box.innerHTML = '<span class="text-danger">未找到该指标的定义</span>';
-            return;
-          }
-          const m = data.metric;
-          const isDerived = m.metricType && (''+m.metricType).toUpperCase().includes('DERIVED');
-          let depsHtml = '';
-          if (isDerived) {
-            if (m.dependencies && m.dependencies.length>0){
-              depsHtml = m.dependencies.map(d=>`<span class="badge bg-info me-1">${d.identifier}</span>`).join('');
-            } else {
-              depsHtml = '<span class="text-muted">无</span>';
-            }
-          }
-          let strategyHtml = '';
-          if (isDerived && m.updateStrategy){
-            strategyHtml = `<tr><td><strong>更新策略</strong></td><td><span class="badge bg-primary">${m.updateStrategy}</span></td></tr>`;
-            if ((m.updateStrategy+'' ).toUpperCase()==='SCHEDULED' && typeof m.calculationInterval!=='undefined'){
-              strategyHtml += `<tr><td><strong>计算间隔(秒)</strong></td><td><span class="badge bg-warning text-dark">${m.calculationInterval}</span></td></tr>`;
-            }
-          }
-          box.innerHTML = `
-            <table class="table table-sm">
-              <tr><td><strong>标识符</strong></td><td><code>${m.identifier||id}</code></td></tr>
-              <tr><td><strong>UUID</strong></td><td><code class="text-success">${m.uuid||'-'}</code></td></tr>
-              <tr><td><strong>名称</strong></td><td>${m.name||'-'}</td></tr>
-              <tr><td><strong>分类</strong></td><td>${m.category||'-'} / ${m.subCategory||'-'}</td></tr>
-              <tr><td><strong>单位</strong></td><td><span class="badge bg-secondary">${m.unit||'-'}</span></td></tr>
-              <tr><td><strong>类型</strong></td><td><span class="badge ${isDerived?'bg-success':'bg-primary'}">${m.metricType||'-'}</span></td></tr>
-              ${isDerived?`<tr><td><strong>依赖</strong></td><td>${depsHtml}</td></tr>`:''}
-              ${strategyHtml}
-              ${isDerived?`<tr><td><strong>公式</strong></td><td><div class="border rounded p-2 bg-light">${m.formula||'-'}</div></td></tr>`:''}
-              <tr><td><strong>描述</strong></td><td>${m.description||'-'}</td></tr>
-            </table>
-          `;
-        })
-        .catch(()=>{
-          document.getElementById('resp-def-friendly').innerHTML = '<span class="text-danger">获取指标定义失败</span>';
-        });
-    });
-}
 
 function querySingleByUuid(){
   const uuid=document.getElementById('single-uuid').value.trim();
@@ -293,6 +208,9 @@ function querySingleByUuid(){
   
   // 设置当前指标ID，用于历史数据查询
   currentMetricId = uuid;
+  
+  // 停止之前的自动刷新
+  stopAutoRefresh();
   
   // 1) 查询实时值并友好展示
   fetch('/api/metrics/query-by-uuid?uuid='+encodeURIComponent(uuid))
@@ -346,67 +264,7 @@ function querySingleByUuid(){
         });
     });
 }
-function queryBatch(){
-  let ids=document.getElementById('batch-ids').value.trim();
-  try{ JSON.parse(ids); }catch(e){ alert('请输入合法JSON数组'); return; }
-  fetch('/api/metrics/batch-query',{method:'POST',headers:{'Content-Type':'application/json'},body:ids})
-    .then(r=>r.json())
-    .then(data=>{ renderBatchFriendly('resp-batch', data); })
-    .catch(()=>{ document.getElementById('resp-batch').innerHTML='<span class="text-danger">请求失败</span>'; });
-}
 
-function renderBatchFriendly(target, data){
-  const box = document.getElementById(target);
-  if (!data) { box.innerHTML = '<span class="text-danger">无返回</span>'; return; }
-  if (data.success === false || data.error){
-    const msg = data.error || '查询失败';
-    box.innerHTML = `<div class="alert alert-danger p-2 mb-0"><i class="bi bi-exclamation-triangle"></i> ${msg}</div>`;
-    return;
-  }
-  
-  if (!data.successResults || Object.keys(data.successResults).length === 0) {
-    box.innerHTML = '<span class="text-muted">无成功结果</span>';
-    return;
-  }
-  
-  let html = '<div class="row g-3">';
-  for (const [identifier, result] of Object.entries(data.successResults)) {
-    const val = result.value || '-';
-    const unit = result.unit || '';
-    const ts = result.timestamp || '-';
-    const quality = result.quality || '-';
-    const id = result.identifier || identifier;
-    
-    html += `
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">
-            <strong>${identifier}</strong>
-          </div>
-          <div class="card-body">
-            <table class="table table-sm mb-0">
-              <tr><td><strong>标识符</strong></td><td><code>${id}</code></td></tr>
-              <tr><td><strong>数值</strong></td><td><span class="fw-bold">${val}</span> ${unit?`<span class="badge bg-secondary">${unit}</span>`:''}</td></tr>
-              <tr><td><strong>时间</strong></td><td>${ts}</td></tr>
-              <tr><td><strong>质量</strong></td><td><span class="badge ${(''+quality).toUpperCase()==='GOOD'?'bg-success':(''+quality).toUpperCase()==='BAD'?'bg-danger':'bg-secondary'}">${quality}</span></td></tr>
-            </table>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  html += '</div>';
-  
-  if (data.errorResults && Object.keys(data.errorResults).length > 0) {
-    html += '<div class="mt-3"><h6 class="text-danger">错误结果：</h6>';
-    for (const [identifier, error] of Object.entries(data.errorResults)) {
-      html += `<div class="alert alert-warning p-2 mb-2"><strong>${identifier}:</strong> ${error}</div>`;
-    }
-    html += '</div>';
-  }
-  
-  box.innerHTML = html;
-}
 function clearCache(){
   fetch('/api/metrics/clear-cache',{method:'POST'})
     .then(r=>r.text()).then(t=>{document.getElementById('resp-clear').innerText=t;});
@@ -450,17 +308,6 @@ function refreshMetricsList() {
     loadMetricsList();
 }
 
-// 填充标识符到查询输入框
-function fillIdentifier(identifier) {
-    document.getElementById('single-id').value = identifier;
-    // 关闭模态框
-    const modal = bootstrap.Modal.getInstance(document.getElementById('allMetricsModal'));
-    if (modal) {
-        modal.hide();
-    }
-    // 自动执行查询
-    querySingle();
-}
 
 // 填充UUID到查询输入框
 function fillUuid(uuid) {
@@ -498,11 +345,7 @@ function renderMetricsList(data) {
                             </div>
                         </div>
                         <div class="text-end">
-                            <div class="small text-muted mb-1">标识符</div>
-                            <a href="javascript:void(0)" class="text-decoration-none" onclick="fillIdentifier('${identifier}')">
-                                <code class="small text-primary">${identifier}</code>
-                            </a>
-                            <div class="small text-success mt-1">UUID</div>
+                            <div class="small text-muted mb-1">UUID</div>
                             <a href="javascript:void(0)" class="text-decoration-none" onclick="fillUuid('${metric.uuid || ''}')">
                                 <code class="small text-success">${metric.uuid || 'N/A'}</code>
                             </a>
@@ -536,11 +379,7 @@ function renderMetricsList(data) {
                             ${metric.formula ? `<div class="mt-1"><code class="small">${metric.formula}</code></div>` : ''}
                         </div>
                         <div class="text-end">
-                            <div class="small text-muted mb-1">标识符</div>
-                            <a href="javascript:void(0)" class="text-decoration-none" onclick="fillIdentifier('${identifier}')">
-                                <code class="small text-primary">${identifier}</code>
-                            </a>
-                            <div class="small text-success mt-1">UUID</div>
+                            <div class="small text-muted mb-1">UUID</div>
                             <a href="javascript:void(0)" class="text-decoration-none" onclick="fillUuid('${metric.uuid || ''}')">
                                 <code class="small text-success">${metric.uuid || 'N/A'}</code>
                             </a>
@@ -557,9 +396,9 @@ function renderMetricsList(data) {
 }
 
 // 图表相关函数
-function loadHistoryData(timeRange) {
+function loadHistoryData() {
   if (!currentMetricId) {
-    alert('请先查询一个指标');
+    console.log('没有当前指标ID，无法加载历史数据');
     return;
   }
   
@@ -567,36 +406,22 @@ function loadHistoryData(timeRange) {
   document.getElementById('chart-loading').style.display = 'block';
   document.getElementById('chart-error').style.display = 'none';
   
-  // 计算时间范围
+  // 计算时间范围：2分钟前到现在，确保能获取到数据
   const now = new Date();
-  let startTime;
-  switch(timeRange) {
-    case '1h':
-      startTime = new Date(now.getTime() - 60 * 60 * 1000);
-      break;
-    case '6h':
-      startTime = new Date(now.getTime() - 6 * 60 * 60 * 1000);
-      break;
-    case '24h':
-      // 为了确保能查询到数据，使用更大的时间范围
-      startTime = new Date(now.getTime() - 72 * 60 * 60 * 1000); // 72小时前
-      break;
-    case '7d':
-      startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      break;
-    default:
-      startTime = new Date(now.getTime() - 72 * 60 * 60 * 1000); // 默认72小时前
-  }
+  const startTime = new Date(now.getTime() - 2 * 60 * 1000); // 2分钟前
   
-  // 直接查询历史数据（支持UUID和identifier）
+  // 添加调试信息
+  console.log('查询时间范围:', startTime.toLocaleString(), '到', now.toLocaleString());
+  
+  // 直接查询历史数据
   queryHistoryWithIdentifier(currentMetricId, startTime, now);
 }
 
 function queryHistoryWithIdentifier(identifier, startTime, endTime) {
-  // 判断是UUID还是identifier - 支持标准UUID(36字符)和非标准UUID(38字符)
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12,14}$/i.test(identifier);
+  // 判断是否为UUID
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{11,14}$/i.test(identifier);
   
-  // 构建查询URL - 使用本地时间格式，因为后端期望LocalDateTime
+  // 格式化时间为ISO格式
   const formatLocalDateTime = (date) => {
     return date.getFullYear() + '-' +
            String(date.getMonth() + 1).padStart(2, '0') + '-' +
@@ -605,6 +430,8 @@ function queryHistoryWithIdentifier(identifier, startTime, endTime) {
            String(date.getMinutes()).padStart(2, '0') + ':' +
            String(date.getSeconds()).padStart(2, '0');
   };
+  
+  console.log('查询参数 - startTime:', formatLocalDateTime(startTime), 'endTime:', formatLocalDateTime(endTime));
   
   const params = new URLSearchParams({
     start: formatLocalDateTime(startTime),
@@ -617,14 +444,27 @@ function queryHistoryWithIdentifier(identifier, startTime, endTime) {
     params.append('metric', identifier);
   }
   
-  fetch('/api/timeseries/history?' + params.toString())
+  // 防止缓存
+  params.append('_t', Date.now());
+  
+  const fullUrl = '/api/timeseries/history?' + params.toString();
+  console.log('历史数据查询完整URL:', fullUrl);
+  
+  fetch(fullUrl)
     .then(response => response.json())
     .then(data => {
       document.getElementById('chart-loading').style.display = 'none';
       
+      console.log('历史数据查询结果:', data);
+      
       if (data.success && data.data && data.data.length > 0) {
+        console.log('准备渲染图表，数据点数量:', data.data.length);
+        console.log('最新数据点:', data.data[data.data.length - 1]);
+        console.log('所有数据点的时间戳:', data.data.map(item => item.timestamp));
+        console.log('所有数据点的值:', data.data.map(item => item.value));
         renderChart(data.data);
       } else {
+        console.log('数据为空或查询失败:', data);
         document.getElementById('chart-error').style.display = 'block';
         document.getElementById('chart-error').innerHTML = '<i class="bi bi-exclamation-triangle"></i> 没有找到历史数据';
       }
@@ -640,11 +480,6 @@ function queryHistoryWithIdentifier(identifier, startTime, endTime) {
 function renderChart(data) {
   const ctx = document.getElementById('metricChart').getContext('2d');
   
-  // 销毁现有图表
-  if (metricChart) {
-    metricChart.destroy();
-  }
-  
   // 准备数据
   const labels = data.map(item => {
     const date = new Date(item.timestamp);
@@ -658,62 +493,96 @@ function renderChart(data) {
   
   const values = data.map(item => parseFloat(item.value) || 0);
   
-  // 创建图表
-  metricChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: currentMetricId,
-        data: values,
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.1)',
-        tension: 0.1,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: false,
-          title: {
-            display: true,
-            text: '数值'
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: '时间'
-          }
-        }
+  // 更新或创建图表
+  if (metricChart) {
+    metricChart.data.labels = labels;
+    metricChart.data.datasets[0].data = values;
+    metricChart.update('none');
+    console.log('图表数据已更新，数据点数量:', values.length, '最新值:', values[values.length - 1]);
+  } else {
+    metricChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: currentMetricId,
+          data: values,
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          tension: 0.1,
+          fill: true
+        }]
       },
-      plugins: {
-        title: {
-          display: true,
-          text: '指标历史值趋势图'
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 0 },
+        scales: {
+          y: {
+            beginAtZero: false,
+            title: { display: true, text: '数值' }
+          },
+          x: {
+            title: { display: true, text: '时间' }
+          }
         },
-        legend: {
-          display: true,
-          position: 'top'
+        plugins: {
+          title: { display: true, text: '指标历史值趋势图' },
+          legend: { display: true, position: 'top' }
         }
       }
-    }
-  });
+    });
+    console.log('新图表已创建，数据点数量:', values.length);
+  }
 }
 
-// 当切换到历史值tab时，自动加载24小时数据
+// 启动自动刷新
+function startAutoRefresh() {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer);
+  }
+  
+  document.getElementById('auto-refresh-status').style.display = 'inline-block';
+  
+  autoRefreshTimer = setInterval(function() {
+    if (currentMetricId && document.getElementById('history-tab').classList.contains('active')) {
+      console.log('自动刷新历史数据...', new Date().toLocaleTimeString());
+      loadHistoryData();
+    } else {
+      console.log('跳过自动刷新 - currentMetricId:', currentMetricId, 'history-tab active:', document.getElementById('history-tab').classList.contains('active'));
+    }
+  }, 3000);
+  
+  console.log('已启动自动刷新，间隔3秒');
+}
+
+// 停止自动刷新
+function stopAutoRefresh() {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = null;
+    console.log('已停止自动刷新');
+  }
+  
+  document.getElementById('auto-refresh-status').style.display = 'none';
+}
+
+// 页面加载完成后设置事件监听器
 document.addEventListener('DOMContentLoaded', function() {
   const historyTab = document.getElementById('history-tab');
   historyTab.addEventListener('shown.bs.tab', function() {
     if (currentMetricId) {
-      loadHistoryData('24h');
+      loadHistoryData();
+      startAutoRefresh();
     } else {
       document.getElementById('chart-error').style.display = 'block';
       document.getElementById('chart-error').innerHTML = '<i class="bi bi-exclamation-triangle"></i> 请先查询一个指标';
     }
+  });
+  
+  const realtimeTab = document.getElementById('realtime-tab');
+  realtimeTab.addEventListener('shown.bs.tab', function() {
+    stopAutoRefresh();
   });
 });
 </script>

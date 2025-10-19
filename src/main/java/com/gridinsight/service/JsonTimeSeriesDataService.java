@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.gridinsight.domain.model.MetricValue;
 import com.gridinsight.domain.model.StoredMetricValue;
-import com.gridinsight.service.MetricConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,7 @@ public class JsonTimeSeriesDataService {
     private String dataPath;
 
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
 
     // 每个指标的历史数据存储（使用简化格式）
     private final Map<String, List<StoredMetricValue>> metricHistory = new ConcurrentHashMap<>();

@@ -30,7 +30,7 @@ public class EventDrivenDependencyUpdateTest {
     private EventDrivenMetricUpdateService eventDrivenUpdateService;
     
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
     
     @Autowired
     private MetricSchedulerService metricSchedulerService;

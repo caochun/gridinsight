@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * 事件驱动的指标计算测试
- * 验证派生指标的值是否真正被计算和更新
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -26,7 +25,7 @@ public class EventDrivenMetricCalculationTest {
     private EventDrivenMetricUpdateService eventDrivenUpdateService;
     
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
     
     @Autowired
     private MetricCalculationService metricCalculationService;

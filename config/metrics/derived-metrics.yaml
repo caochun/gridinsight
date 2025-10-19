@@ -1,0 +1,63 @@
+# 派生指标定义配置
+# 外部配置文件，修改后无需重新编译
+
+derivedMetrics:
+  "测试.计算.随机数平方":
+    name: "随机数平方"
+    category: "测试"
+    subCategory: "计算"
+    unit: "个"
+    description: "计算随机数的平方值"
+    uuid: "550e8400-e29b-41d4-a716-44665544000008"
+    formula: "测试.HTTP.随机数 * 测试.HTTP.随机数"
+    dependencies:
+      - "测试.HTTP.随机数"
+
+
+  # 基于数据库内容的派生指标
+  "电力.效率.配变利用率":
+    name: "配变利用率"
+    category: "电力"
+    subCategory: "效率"
+    unit: "%"
+    description: "配变利用率计算，基于平均负荷和配变总容量"
+    uuid: "550e8400-e29b-41d4-a716-44665544000011"
+    formula: "(电力.负荷.平均负荷 / 电力.设备.配变总容量) * 100"
+    dependencies:
+      - "电力.负荷.平均负荷"
+      - "电力.设备.配变总容量"
+
+  "电力.效率.用户密度":
+    name: "用户密度"
+    category: "电力"
+    subCategory: "效率"
+    unit: "户/台"
+    description: "每台配变的用户密度"
+    uuid: "550e8400-e29b-41d4-a716-44665544000012"
+    formula: "电力.用户.活跃用户数量 / 电力.设备.活跃配变数量"
+    dependencies:
+      - "电力.用户.活跃用户数量"
+      - "电力.设备.活跃配变数量"
+
+  "电力.质量.设备健康度":
+    name: "设备健康度"
+    category: "电力"
+    subCategory: "质量"
+    unit: "%"
+    description: "设备健康度评估，基于活跃配变比例"
+    uuid: "550e8400-e29b-41d4-a716-44665544000013"
+    formula: "(电力.设备.活跃配变数量 / 10) * 100"
+    dependencies:
+      - "电力.设备.活跃配变数量"
+
+  "电力.负荷.负荷密度":
+    name: "负荷密度"
+    category: "电力"
+    subCategory: "负荷"
+    unit: "MW/台"
+    description: "每台配变的平均负荷密度"
+    uuid: "550e8400-e29b-41d4-a716-44665544000014"
+    formula: "电力.负荷.平均负荷 / 电力.设备.活跃配变数量"
+    dependencies:
+      - "电力.负荷.平均负荷"
+      - "电力.设备.活跃配变数量"

@@ -23,7 +23,7 @@ public class EventDrivenMetricUpdateService {
     private ApplicationEventPublisher eventPublisher;
     
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
     
     @Autowired
     private MetricCalculationService metricCalculationService;

@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MetricSchedulerService {
 
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
     
     @Autowired
     private DataSourceService dataSourceService;

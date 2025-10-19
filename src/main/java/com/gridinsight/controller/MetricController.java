@@ -5,13 +5,12 @@ import com.gridinsight.domain.model.Metric;
 import com.gridinsight.domain.model.BasicMetric;
 import com.gridinsight.domain.model.DerivedMetric;
 import com.gridinsight.service.TimeSeriesDataService;
-import com.gridinsight.service.MetricConfigService;
+import com.gridinsight.service.ExternalMetricConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +27,7 @@ public class MetricController {
     private TimeSeriesDataService timeSeriesDataService;
     
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
 
     /**
      * 根据标识符查询指标值（从时序数据库获取最新值）

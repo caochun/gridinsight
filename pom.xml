@@ -53,6 +53,25 @@
             <version>3.45.0.0</version>
         </dependency>
         
+        <!-- Spring Boot JDBC Starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        
+        <!-- Spring Boot JPA Starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        
+        <!-- SQLite Dialect for Hibernate -->
+        <dependency>
+            <groupId>com.github.gwenn</groupId>
+            <artifactId>sqlite-dialect</artifactId>
+            <version>0.1.2</version>
+        </dependency>
+        
         <!-- Chronicle Queue dependencies removed due to Java 25 compatibility issues -->
         
         <!-- Jackson for JSON serialization (fallback) -->

@@ -4,7 +4,7 @@ import com.gridinsight.domain.model.MetricValue;
 import com.gridinsight.domain.model.BasicMetric;
 import com.gridinsight.domain.model.DerivedMetric;
 import com.gridinsight.service.TimeSeriesDataService;
-import com.gridinsight.service.MetricConfigService;
+import com.gridinsight.service.ExternalMetricConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +28,7 @@ public class TimeSeriesController {
     private TimeSeriesDataService timeSeriesDataService;
     
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
 
     /**
      * 查询指标历史数据

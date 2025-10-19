@@ -3,7 +3,7 @@ package com.gridinsight;
 import com.gridinsight.domain.model.DerivedMetric;
 import com.gridinsight.domain.model.DerivedMetricUpdateStrategy;
 import com.gridinsight.domain.model.MetricValue;
-import com.gridinsight.service.MetricConfigService;
+import com.gridinsight.service.ExternalMetricConfigService;
 import com.gridinsight.service.MetricSchedulerService;
 import com.gridinsight.service.TimeSeriesDataService;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ScheduledMetricUpdateTest {
 
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
 
     @Autowired
     private MetricSchedulerService metricSchedulerService;

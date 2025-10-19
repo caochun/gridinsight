@@ -1,0 +1,99 @@
+# 基础指标定义配置
+# 外部配置文件，修改后无需重新编译
+
+basicMetrics:
+  "测试.HTTP.随机数":
+    name: "随机数"
+    category: "测试"
+    subCategory: "HTTP"
+    unit: "个"
+    description: "从random.org获取的0-100随机整数"
+    uuid: "550e8400-e29b-41d4-a716-44665544000010"
+    dataSource:
+      sourceType: "HTTP_API"
+      sourceAddress: "https://www.random.org/integers/?num=1&min=0&max=100&col=1&base=10&format=plain&rnd=new&timestamp=${timestamp}"
+      sourceName: "Random.org API"
+      refreshInterval: 2
+      enabled: true
+
+
+  # 基于数据库内容的测试指标
+  "电力.设备.活跃配变数量":
+    name: "活跃配变数量"
+    category: "电力"
+    subCategory: "设备"
+    unit: "台"
+    description: "从数据库获取的活跃配变数量"
+    uuid: "550e8400-e29b-41d4-a716-44665544000020"
+    dataSource:
+      sourceType: "DATABASE"
+      sourceAddress: "jdbc:sqlite:data/power.db"
+      sourceName: "电力数据库"
+      refreshInterval: 3
+      enabled: true
+      config:
+        connectionString: "jdbc:sqlite:data/power.db"
+        driver: "org.sqlite.JDBC"
+        query: "SELECT COUNT(*) FROM transformers WHERE status = 'active'"
+        username: ""
+        password: ""
+
+  "电力.用户.活跃用户数量":
+    name: "活跃用户数量"
+    category: "电力"
+    subCategory: "用户"
+    unit: "户"
+    description: "从数据库获取的活跃用户数量"
+    uuid: "550e8400-e29b-41d4-a716-44665544000021"
+    dataSource:
+      sourceType: "DATABASE"
+      sourceAddress: "jdbc:sqlite:data/power.db"
+      sourceName: "电力数据库"
+      refreshInterval: 2
+      enabled: true
+      config:
+        connectionString: "jdbc:sqlite:data/power.db"
+        driver: "org.sqlite.JDBC"
+        query: "SELECT COUNT(*) FROM users WHERE active = 1"
+        username: ""
+        password: ""
+
+  "电力.负荷.平均负荷":
+    name: "平均负荷"
+    category: "电力"
+    subCategory: "负荷"
+    unit: "MW"
+    description: "从数据库获取的近24小时平均负荷"
+    uuid: "550e8400-e29b-41d4-a716-44665544000022"
+    dataSource:
+      sourceType: "DATABASE"
+      sourceAddress: "jdbc:sqlite:data/power.db"
+      sourceName: "电力数据库"
+      refreshInterval: 3
+      enabled: true
+      config:
+        connectionString: "jdbc:sqlite:data/power.db"
+        driver: "org.sqlite.JDBC"
+        query: "SELECT AVG(load_value) FROM historical_load WHERE date >= datetime('now', '-1 day')"
+        username: ""
+        password: ""
+
+  "电力.设备.配变总容量":
+    name: "配变总容量"
+    category: "电力"
+    subCategory: "设备"
+    unit: "kVA"
+    description: "从数据库获取的活跃配变总容量"
+    uuid: "550e8400-e29b-41d4-a716-44665544000023"
+    dataSource:
+      sourceType: "DATABASE"
+      sourceAddress: "jdbc:sqlite:data/power.db"
+      sourceName: "电力数据库"
+      refreshInterval: 4
+      enabled: true
+      config:
+        connectionString: "jdbc:sqlite:data/power.db"
+        driver: "org.sqlite.JDBC"
+        query: "SELECT SUM(capacity) FROM transformers WHERE status = 'active'"
+        username: ""
+        password: ""

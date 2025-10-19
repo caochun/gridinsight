@@ -1,7 +1,7 @@
 package com.gridinsight.controller;
 
 import com.gridinsight.domain.model.*;
-import com.gridinsight.service.MetricConfigService;
+import com.gridinsight.service.ExternalMetricConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class MetricManagementController {
 
     @Autowired
-    private MetricConfigService metricConfigService;
+    private ExternalMetricConfigService metricConfigService;
 
     /**
      * 指标管理首页

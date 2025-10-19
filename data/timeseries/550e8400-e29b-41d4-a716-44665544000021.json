@@ -1,0 +1,1253 @@
+[ {
+  "value" : 112.0,
+  "timestamp" : "2025-10-19T22:23:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 112.0,
+  "timestamp" : "2025-10-19T22:24:08",
+  "quality" : "GOOD"
+}, {
+  "value" : 112.0,
+  "timestamp" : "2025-10-19T22:25:09",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:09",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:12",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:15",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:17",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:20",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:23",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:25",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:28",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:31",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:33",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:36",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:40",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:46",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:48",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:51",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:54",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:56",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:23:59",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:10",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:15",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:18",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:20",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:23",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:26",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:31",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:34",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:40",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:46",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:49",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:52",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:24:57",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:00",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:03",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:12",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:14",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:17",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:20",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:23",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:26",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:31",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:34",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:36",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:39",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:41",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:44",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:47",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:50",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:53",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:25:58",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:00",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:03",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:05",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:08",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:11",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:16",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:19",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:25",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:28",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:31",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:33",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:36",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:39",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:42",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:45",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:48",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:50",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:53",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:56",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:26:58",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:01",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:06",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:10",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:12",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:14",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:17",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:20",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:23",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:26",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:32",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:35",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:38",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:40",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:46",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:48",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:51",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:54",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:57",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:27:59",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:06",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:09",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:11",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:14",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:16",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:19",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:22",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:24",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:27",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:30",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:33",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:39",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:42",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:45",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:48",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:50",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:53",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:56",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:28:59",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:05",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:08",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:11",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:16",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:19",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:22",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:24",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:27",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:30",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:33",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:35",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:38",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:40",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:46",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:48",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:51",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:53",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:29:58",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:01",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:10",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:15",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:18",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:20",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:23",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:27",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:32",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:34",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:40",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:42",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:45",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:47",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:51",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:54",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:56",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:30:59",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:05",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:10",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:15",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:18",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:21",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:24",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:26",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:31",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:34",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:46",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:31:57",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:00",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:05",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:10",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:12",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:15",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:17",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:19",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:22",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:25",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:27",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:30",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:33",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:39",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:50",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:52",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:32:59",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:01",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:05",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:08",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:10",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:16",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:18",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:22",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:24",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:36",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:41",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:44",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:47",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:50",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:53",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:56",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:33:59",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:04",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:10",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:13",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:16",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:21",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:24",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:27",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:32",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:35",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:38",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:40",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:49",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:51",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:54",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:56",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:34:59",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:05",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:07",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:10",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:15",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:18",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:20",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:23",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:26",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:32",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:34",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:40",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:50",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:53",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:35:57",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:00",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:05",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:08",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:11",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:14",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:16",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:24",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:26",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:29",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:32",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:35",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:37",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:40",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:43",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:54",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:36:57",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:00",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:03",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:05",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:08",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:11",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:14",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:16",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:19",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:22",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:25",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:27",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:30",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:33",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:36",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:39",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:42",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:44",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:47",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:50",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:52",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:55",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:37:59",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:02",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:06",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:09",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:12",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:16",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:18",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:21",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:23",
+  "quality" : "GOOD"
+}, {
+  "value" : 176.0,
+  "timestamp" : "2025-10-19T23:38:26",
+  "quality" : "GOOD"
+} ]
