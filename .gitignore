@@ -234,14 +234,8 @@ temp/
 *.sw?
 
 # GridInsight specific
-# 时序数据文件（运行时生成，不应提交到版本控制）
-data/timeseries/*.json
-!data/timeseries/.gitkeep
-
-# 数据库文件（运行时生成）
-data/*.db
-data/*.sqlite
-data/*.sqlite3
+# 数据目录（运行时生成，不应提交到版本控制）
+data/
 
 # 配置文件备份
 config/*.bak
