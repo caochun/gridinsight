@@ -12,8 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 指标调度服务
- * 根据refreshInterval定期更新指标值并存储到时序数据库
+ * 基础指标调度服务
+ * 根据refreshInterval/samplingInterval定期更新基础指标值并存储到时序数据库
+ * 派生指标通过事件驱动机制自动更新，不需要定时调度
  */
 @Service
 public class MetricSchedulerService {
@@ -41,7 +42,7 @@ public class MetricSchedulerService {
     private final Map<String, AtomicLong> updateCounters = new ConcurrentHashMap<>();
 
     /**
-     * 定时任务：每1秒检查需要更新的指标
+     * 定时任务：每1秒检查需要更新的基础指标
      */
     @Scheduled(fixedRate = 1000) // 每1秒执行一次
     public void scheduleMetricUpdates() {
@@ -71,9 +72,6 @@ public class MetricSchedulerService {
                 }
             }
         }
-        
-        // 🎯 改进：派生指标现在通过事件驱动自动更新，这里只处理定时计算策略
-        Map<String, DerivedMetric> derivedMetrics = metricConfigService.getAllDerivedMetrics();
         
         // 派生指标现在都使用事件驱动机制，不再需要定时调度
         // 所有派生指标都会在依赖的基础指标值变化时自动重新计算
@@ -199,28 +197,9 @@ public class MetricSchedulerService {
         }
     }
 
-    /**
-     * 异步更新派生指标值
-     * 注意：派生指标的计算仍然需要通过计算服务，因为需要从时序数据库读取依赖指标的值
-     */
-    @Async
-    public void updateDerivedMetricAsync(String identifier, DerivedMetric metric) {
-        try {
-            System.out.println("开始更新派生指标: " + identifier);
-            
-            // 派生指标需要从时序数据库读取依赖指标的值进行计算
-            // 这里暂时保留通过计算服务的逻辑，但未来可以优化为直接从时序数据库读取
-            // 目前先跳过，因为需要重构计算服务
-            
-            System.out.println("派生指标更新跳过（需要重构计算服务）: " + identifier);
-            
-        } catch (Exception e) {
-            System.out.println("派生指标更新异常: " + identifier + ", 错误: " + e.getMessage());
-        }
-    }
 
     /**
-     * 手动触发指标更新
+     * 手动触发基础指标更新
      */
     public void triggerMetricUpdate(String identifier) {
         Metric metric = metricConfigService.getMetric(identifier);
@@ -234,11 +213,8 @@ public class MetricSchedulerService {
                     updatePassiveDataSourceMetric(identifier, basicMetric);
                 }
             }
-        } else if (metric instanceof DerivedMetric) {
-            updateDerivedMetricAsync(identifier, (DerivedMetric) metric);
-        } else {
-            // 未知的指标类型
         }
+        // 派生指标通过事件驱动自动更新，不需要手动触发
     }
 
     /**
@@ -294,17 +270,18 @@ public class MetricSchedulerService {
     }
 
     /**
-     * 启动时初始化所有指标
+     * 启动时初始化所有基础指标
      */
     public void initializeMetrics() {
-        // 初始化指标调度服务
+        // 初始化基础指标调度服务
         Map<String, BasicMetric> basicMetrics = metricConfigService.getAllBasicMetrics();
         
         for (String identifier : basicMetrics.keySet()) {
-            // 立即更新一次
+            // 立即更新一次基础指标
             triggerMetricUpdate(identifier);
         }
         
-        // 指标调度服务初始化完成
+        // 基础指标调度服务初始化完成
+        // 派生指标通过事件驱动机制自动更新
     }
 }
