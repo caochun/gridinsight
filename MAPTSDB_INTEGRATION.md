@@ -94,6 +94,26 @@ gridinsight.maptsdb.cleanup-on-shutdown=true
 | `gridinsight.maptsdb.enable-transactions` | `true` | 启用事务支持 |
 | `gridinsight.maptsdb.concurrency-scale` | `16` | 并发级别 |
 | `gridinsight.maptsdb.cleanup-on-shutdown` | `true` | 关闭时清理资源 |
+| `gridinsight.maptsdb.batch-size` | `10` | 批量提交大小，每N次写入后自动commit |
+
+## 事务和Commit策略
+
+MapTSDB支持事务操作，为了平衡性能和数据安全性，采用了以下commit策略：
+
+### 批量Commit策略
+- **自动批量提交**: 每`batch-size`次写入后自动commit一次
+- **默认批量大小**: 10次写入
+- **可配置**: 通过`gridinsight.maptsdb.batch-size`配置
+
+### 手动Commit
+```java
+// 手动提交所有待提交的数据
+mapTsdbTimeSeriesDataService.commitAll();
+```
+
+### 关闭时自动Commit
+- 应用关闭时自动commit所有未提交的数据
+- 确保数据不丢失
 
 ## 性能优势
 

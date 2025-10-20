@@ -33,6 +33,12 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
     
     // 最新值缓存（可选）
     private final Map<String, MetricValue> latestValueCache = new ConcurrentHashMap<>();
+    
+    // 批量写入计数器
+    private final Map<String, Integer> batchCounters = new ConcurrentHashMap<>();
+    
+    @Value("${gridinsight.maptsdb.batch-size:10}")
+    private int batchSize;
 
     @PostConstruct
     public void init() {
@@ -57,11 +63,29 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
     public void destroy() {
         try {
             if (tsdb != null) {
+                // 关闭前确保所有数据都被提交
+                tsdb.commit();
                 tsdb.close();
                 System.out.println("MapTSDB数据库已关闭");
             }
         } catch (Exception e) {
             System.err.println("关闭MapTSDB时发生错误: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 手动提交所有待提交的数据
+     */
+    public void commitAll() {
+        try {
+            if (tsdb != null) {
+                tsdb.commit();
+                // 重置所有计数器
+                batchCounters.clear();
+                System.out.println("所有数据已提交到MapTSDB");
+            }
+        } catch (Exception e) {
+            System.err.println("提交数据时发生错误: " + e.getMessage());
         }
     }
 
@@ -80,6 +104,13 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
             if (metricValue != null) {
                 // 使用putDouble方法存储float值
                 tsdb.putDouble(metricIdentifier, timestampMillis, metricValue);
+                
+                // 批量提交策略：每batchSize次写入后commit一次
+                int currentCount = batchCounters.compute(metricIdentifier, (k, v) -> (v == null ? 1 : v + 1));
+                if (currentCount >= batchSize) {
+                    tsdb.commit();
+                    batchCounters.put(metricIdentifier, 0); // 重置计数器
+                }
                 
                 // 更新缓存
                 if (enableCache) {
