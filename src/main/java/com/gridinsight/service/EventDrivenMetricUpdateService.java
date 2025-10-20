@@ -141,10 +141,7 @@ public class EventDrivenMetricUpdateService {
                 return;
             }
             
-            DerivedMetric derivedMetric = (DerivedMetric) metric;
-            
             // 现在所有派生指标都使用事件驱动机制
-            
             // 开始更新派生指标
             
             // 计算派生指标值
