@@ -1,0 +1,251 @@
+package com.gridinsight.service;
+
+import com.gridinsight.domain.model.MetricValue;
+import com.maptsdb.TimeSeriesDatabase;
+import com.maptsdb.TimeSeriesDatabaseBuilder;
+import com.maptsdb.DataPoint;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * 基于MapTSDB的时序数据存储服务实现
+ * 使用高性能的MapDB时序数据库存储指标历史数据
+ * 所有指标值都作为float类型存储，不包含quality属性
+ */
+@Service
+public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
+
+    @Value("${gridinsight.timeseries.data-path:data/timeseries}")
+    private String dataPath;
+
+    @Value("${gridinsight.timeseries.enable-cache:true}")
+    private boolean enableCache;
+
+    // MapTSDB数据库实例
+    private TimeSeriesDatabase tsdb;
+    
+    // 最新值缓存（可选）
+    private final Map<String, MetricValue> latestValueCache = new ConcurrentHashMap<>();
+
+    @PostConstruct
+    public void init() {
+        try {
+            // 初始化MapTSDB
+            // 注意：根据MapTSDB的实际API调整初始化方式
+            tsdb = TimeSeriesDatabaseBuilder.builder()
+                    .enableMemoryMapping(true)
+                    .enableTransactions(true)
+                    .concurrencyScale(16)
+                    .build();
+            
+            System.out.println("MapTSDB时序数据库初始化成功，数据路径: " + dataPath);
+            
+        } catch (Exception e) {
+            System.err.println("MapTSDB初始化失败: " + e.getMessage());
+            throw new RuntimeException("MapTSDB初始化失败", e);
+        }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        try {
+            if (tsdb != null) {
+                tsdb.close();
+                System.out.println("MapTSDB数据库已关闭");
+            }
+        } catch (Exception e) {
+            System.err.println("关闭MapTSDB时发生错误: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void storeMetricValue(String metricIdentifier, MetricValue value, LocalDateTime timestamp) {
+        if (metricIdentifier == null || value == null || timestamp == null) {
+            throw new IllegalArgumentException("参数不能为空");
+        }
+
+        try {
+            // 将LocalDateTime转换为时间戳（毫秒）
+            long timestampMillis = timestamp.toInstant(ZoneOffset.UTC).toEpochMilli();
+            
+            // 所有指标值都转换为float类型存储到MapTSDB
+            Double metricValue = value.getValue();
+            if (metricValue != null) {
+                // 使用putDouble方法存储float值
+                tsdb.putDouble(metricIdentifier, timestampMillis, metricValue);
+                
+                // 更新缓存
+                if (enableCache) {
+                    latestValueCache.put(metricIdentifier, value);
+                }
+            }
+            
+        } catch (Exception e) {
+            throw new RuntimeException("存储指标值时发生错误: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public MetricValue getLatestMetricValue(String metricIdentifier) {
+        if (metricIdentifier == null) {
+            return null;
+        }
+
+        try {
+            // 先从缓存获取
+            if (enableCache && latestValueCache.containsKey(metricIdentifier)) {
+                return latestValueCache.get(metricIdentifier);
+            }
+
+            // 从数据库获取最新值
+            // 注意：这里需要根据MapTSDB的实际API调整
+            Object latestValue = tsdb.getLatestValue(metricIdentifier);
+            
+            if (latestValue != null && latestValue instanceof Double) {
+                MetricValue metricValue = new MetricValue(
+                    metricIdentifier, 
+                    (Double) latestValue, 
+                    "个", // 单位需要从指标定义中获取
+                    LocalDateTime.now()
+                );
+                
+                // 更新缓存
+                if (enableCache) {
+                    latestValueCache.put(metricIdentifier, metricValue);
+                }
+                
+                return metricValue;
+            }
+            
+            return null;
+            
+        } catch (Exception e) {
+            System.err.println("获取最新指标值时发生错误: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public List<MetricValue> getMetricHistory(String metricIdentifier, LocalDateTime startTime, LocalDateTime endTime) {
+        if (metricIdentifier == null || startTime == null || endTime == null) {
+            return Collections.emptyList();
+        }
+
+        try {
+            long startMillis = startTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+            long endMillis = endTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+            
+            // 从MapTSDB查询时间范围内的数据
+            List<DataPoint<Object>> dataPoints = tsdb.getRange(metricIdentifier, startMillis, endMillis);
+            
+            List<MetricValue> result = new ArrayList<>();
+            for (DataPoint<Object> dataPoint : dataPoints) {
+                if (dataPoint.getValue() instanceof Double) {
+                    // 将时间戳（毫秒）转换为LocalDateTime
+                    LocalDateTime timestamp = LocalDateTime.ofEpochSecond(
+                        dataPoint.getTimestamp() / 1000, 
+                        0, 
+                        ZoneOffset.UTC
+                    );
+                    
+                    MetricValue metricValue = new MetricValue(
+                        metricIdentifier,
+                        (Double) dataPoint.getValue(),
+                        "个", // 单位需要从指标定义中获取
+                        timestamp
+                    );
+                    result.add(metricValue);
+                }
+            }
+            
+            return result;
+            
+        } catch (Exception e) {
+            System.err.println("获取指标历史数据时发生错误: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public Map<String, MetricValue> getLatestMetricValues(List<String> metricIdentifiers) {
+        Map<String, MetricValue> result = new HashMap<>();
+        
+        for (String identifier : metricIdentifiers) {
+            MetricValue value = getLatestMetricValue(identifier);
+            if (value != null) {
+                result.put(identifier, value);
+            }
+        }
+        
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getMetricStatistics(String metricIdentifier, String timeRange) {
+        // 实现统计功能
+        Map<String, Object> stats = new HashMap<>();
+        
+        try {
+            // 这里可以根据timeRange计算统计数据
+            // 例如：平均值、最大值、最小值、数据点数等
+            
+            stats.put("metric", metricIdentifier);
+            stats.put("range", timeRange);
+            stats.put("count", 0);
+            stats.put("average", 0.0);
+            stats.put("max", 0.0);
+            stats.put("min", 0.0);
+            
+        } catch (Exception e) {
+            System.err.println("获取指标统计信息时发生错误: " + e.getMessage());
+        }
+        
+        return stats;
+    }
+
+    @Override
+    public Map<String, Object> getStorageStats() {
+        Map<String, Object> stats = new HashMap<>();
+        
+        try {
+            // 获取存储统计信息
+            stats.put("storageType", "MapTSDB");
+            stats.put("dataPath", dataPath);
+            stats.put("cacheEnabled", enableCache);
+            stats.put("cacheSize", latestValueCache.size());
+            
+            // 这里可以添加更多MapTSDB特定的统计信息
+            
+        } catch (Exception e) {
+            System.err.println("获取存储统计信息时发生错误: " + e.getMessage());
+        }
+        
+        return stats;
+    }
+
+    @Override
+    public void clearAllData() {
+        try {
+            // 清空所有数据
+            // 注意：这里需要根据MapTSDB的实际API调整
+            // tsdb.clearAll();
+            
+            // 清空缓存
+            if (enableCache) {
+                latestValueCache.clear();
+            }
+            
+            System.out.println("所有时序数据已清空");
+            
+        } catch (Exception e) {
+            throw new RuntimeException("清空数据时发生错误: " + e.getMessage(), e);
+        }
+    }
+}

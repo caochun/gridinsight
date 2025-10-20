@@ -52,6 +52,13 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.45.0.0</version>
         </dependency>
+
+        <!-- MapTSDB - 基于MapDB的时序数据存储系统 -->
+        <dependency>
+            <groupId>com.maptsdb</groupId>
+            <artifactId>maptsdb</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         
         <!-- Spring Boot JDBC Starter -->
         <dependency>
