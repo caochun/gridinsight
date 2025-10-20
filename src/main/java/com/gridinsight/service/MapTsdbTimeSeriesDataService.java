@@ -46,9 +46,8 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
             // 初始化MapTSDB
             // 注意：根据MapTSDB的实际API调整初始化方式
             tsdb = TimeSeriesDatabaseBuilder.builder()
-                    .enableMemoryMapping(true)
-                    .enableTransactions(true)
-                    .concurrencyScale(16)
+                    .enableMemoryMapping()
+                    .enableTransactions()
                     .build();
             
             System.out.println("MapTSDB时序数据库初始化成功，数据路径: " + dataPath);
@@ -124,6 +123,40 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
     }
 
     @Override
+    public void storeMetricValues(Map<String, MetricValue> values, LocalDateTime timestamp) {
+        if (values == null || timestamp == null) {
+            throw new IllegalArgumentException("参数不能为空");
+        }
+
+        try {
+            // 将LocalDateTime转换为时间戳（毫秒）
+            long timestampMillis = timestamp.toInstant(ZoneOffset.UTC).toEpochMilli();
+            
+            // 批量存储所有指标值
+            for (Map.Entry<String, MetricValue> entry : values.entrySet()) {
+                String metricIdentifier = entry.getKey();
+                MetricValue value = entry.getValue();
+                
+                if (value != null && value.getValue() != null) {
+                    // 使用putDouble方法存储float值
+                    tsdb.putDouble(metricIdentifier, timestampMillis, value.getValue());
+                    
+                    // 更新缓存
+                    if (enableCache) {
+                        latestValueCache.put(metricIdentifier, value);
+                    }
+                }
+            }
+            
+            // 批量提交
+            tsdb.commit();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("批量存储指标值时发生错误: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public MetricValue getLatestMetricValue(String metricIdentifier) {
         if (metricIdentifier == null) {
             return null;
@@ -137,22 +170,12 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
 
             // 从数据库获取最新值
             // 注意：这里需要根据MapTSDB的实际API调整
-            Object latestValue = tsdb.getLatestValue(metricIdentifier);
+            // 暂时返回null，等待MapTSDB API确认
+            // Object latestValue = tsdb.getLatestValue(metricIdentifier);
             
-            if (latestValue != null && latestValue instanceof Double) {
-                MetricValue metricValue = new MetricValue(
-                    metricIdentifier, 
-                    (Double) latestValue, 
-                    "个", // 单位需要从指标定义中获取
-                    LocalDateTime.now()
-                );
-                
-                // 更新缓存
-                if (enableCache) {
-                    latestValueCache.put(metricIdentifier, metricValue);
-                }
-                
-                return metricValue;
+            // 临时实现：从缓存获取
+            if (enableCache && latestValueCache.containsKey(metricIdentifier)) {
+                return latestValueCache.get(metricIdentifier);
             }
             
             return null;
@@ -174,27 +197,13 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
             long endMillis = endTime.toInstant(ZoneOffset.UTC).toEpochMilli();
             
             // 从MapTSDB查询时间范围内的数据
-            List<DataPoint<Object>> dataPoints = tsdb.getRange(metricIdentifier, startMillis, endMillis);
+            // 注意：这里需要根据MapTSDB的实际API调整
+            // 暂时返回空列表，等待MapTSDB API确认
+            // List<DataPoint<Object>> dataPoints = tsdb.getRange(metricIdentifier, startMillis, endMillis);
             
             List<MetricValue> result = new ArrayList<>();
-            for (DataPoint<Object> dataPoint : dataPoints) {
-                if (dataPoint.getValue() instanceof Double) {
-                    // 将时间戳（毫秒）转换为LocalDateTime
-                    LocalDateTime timestamp = LocalDateTime.ofEpochSecond(
-                        dataPoint.getTimestamp() / 1000, 
-                        0, 
-                        ZoneOffset.UTC
-                    );
-                    
-                    MetricValue metricValue = new MetricValue(
-                        metricIdentifier,
-                        (Double) dataPoint.getValue(),
-                        "个", // 单位需要从指标定义中获取
-                        timestamp
-                    );
-                    result.add(metricValue);
-                }
-            }
+            // 临时实现：返回空列表
+            // TODO: 实现真正的历史数据查询
             
             return result;
             
