@@ -5,7 +5,7 @@
 ## 技术栈
 
 - **Java 11+** | **Spring Boot 2.7.18** | **端口：9000**
-- **时序存储**：基于JSON文件的高性能本地存储
+- **时序存储**：MapTSDB高性能时序数据库 + JSON文件存储
 - **数据库**：SQLite（支持外部配置）
 - **前端**：Bootstrap + Chart.js
 
@@ -19,7 +19,7 @@
 ### 🔗 BasicMetric（基础指标）
 - **数据源**：HTTP_API、MQTT、DATABASE、FILE
 - **更新机制**：定时刷新（refreshInterval）或采样存储（samplingInterval）
-- **存储**：JSON文件时序数据库
+- **存储**：MapTSDB时序数据库（高性能）或JSON文件存储
 
 ### 🧮 DerivedMetric（派生指标）
 - **计算公式**：支持 +、-、*、/、sqrt()、abs()、max()、min()
@@ -28,7 +28,7 @@
 
 ### 💾 MetricValue（指标值）
 - **结构**：标识符、数值、单位、时间戳、数据质量
-- **存储**：基于JSON文件的高性能本地存储
+- **存储**：MapTSDB时序数据库（高性能）或JSON文件存储
 
 ## 🏗️ 架构与模块
 
@@ -36,7 +36,7 @@
 - **ExternalMetricConfigService**：外部配置文件管理
 - **MetricCalculationService**：指标计算中枢
 - **EventDrivenMetricUpdateService**：事件驱动更新
-- **JsonTimeSeriesDataService**：时序数据存储
+- **TimeSeriesDataService**：时序数据存储（支持MapTSDB和JSON）
 
 ### 控制器
 - **MetricController**：REST API接口
@@ -70,13 +70,25 @@ mvn spring-boot:run
 - ✅ **外部配置**：修改后无需重新编译
 - ✅ **热加载**：支持动态配置更新
 - ✅ **多数据源**：HTTP、MQTT、数据库、文件
+- ✅ **存储切换**：支持MapTSDB/JSON存储模式切换
+
+### 时序存储配置
+```properties
+# 选择时序存储类型：maptsdb（推荐）或 json
+gridinsight.timeseries.type=maptsdb
+
+# MapTSDB配置
+gridinsight.maptsdb.enable-memory-mapping=true
+gridinsight.maptsdb.enable-transactions=true
+gridinsight.maptsdb.batch-size=10
+```
 
 ## 🔄 事件驱动更新
 
 1. **基础指标更新** → 发布 `MetricValueChangedEvent`
 2. **事件监听** → 查找依赖的派生指标
 3. **异步计算** → 触发派生指标重新计算
-4. **结果存储** → 保存到JSON文件时序存储
+4. **结果存储** → 保存到MapTSDB时序数据库或JSON文件
 
 ## 🌐 REST API
 
@@ -115,17 +127,24 @@ mvn clean test
 
 ## 💾 时序存储
 
-### JSON文件存储
-- **高性能**：支持高并发读写操作
+### MapTSDB时序数据库（推荐）
+- **高性能**：基于MapDB构建，支持40万+写入/秒
+- **事务支持**：批量提交策略，确保数据一致性
+- **动态数据源**：运行时自动添加指标数据源
+- **内存映射**：高效的内存使用和磁盘I/O
+- **数据恢复**：支持现有数据库文件打开和恢复
+
+### JSON文件存储（备用）
 - **轻量级**：无外部依赖，基于JSON文件
-- **持久化**：数据存储在本地文件系统
 - **易调试**：JSON格式便于查看和调试
+- **兼容性**：完全向后兼容
 
 ### 存储特性
-- 每个指标使用独立的JSON文件
-- 内置最新值缓存，毫秒级查询响应
-- 支持时间范围查询和统计计算
-- 故障恢复：应用重启后数据恢复
+- **双模式支持**：可通过配置切换MapTSDB/JSON存储
+- **自动数据源管理**：动态添加指标数据源
+- **批量提交优化**：提升写入性能
+- **内置缓存**：最新值缓存，毫秒级查询响应
+- **时间范围查询**：支持历史数据查询和统计计算
 
 ## 📁 项目结构
 
@@ -142,7 +161,7 @@ gridinsight/
 │       ├── controller/       # 控制器
 │       └── config/          # 配置类
 ├── data/                     # 数据目录
-│   └── timeseries/          # 时序数据存储
+│   └── timeseries/          # 时序数据存储（MapTSDB/JSON）
 └── README.md
 ```
 
@@ -151,7 +170,7 @@ gridinsight/
 - ✅ **外部配置**：修改配置无需重新编译
 - ✅ **事件驱动**：派生指标自动更新
 - ✅ **多数据源**：HTTP、MQTT、数据库、文件
-- ✅ **时序存储**：基于JSON文件的高性能存储
+- ✅ **时序存储**：MapTSDB高性能时序数据库 + JSON文件存储
 - ✅ **Web界面**：完整的管理和监控界面
 - ✅ **REST API**：完整的API接口
 - ✅ **UUID支持**：安全的指标标识和查询

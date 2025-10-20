@@ -23,31 +23,25 @@ public class TimeSeriesDataConfig {
      * 配置时序数据服务
      * 根据gridinsight.timeseries.type配置选择实现
      */
-    @Bean
-    @Primary
-    public TimeSeriesDataService timeSeriesDataService() {
-        if ("maptsdb".equalsIgnoreCase(timeseriesType)) {
-            return new MapTsdbTimeSeriesDataService();
-        } else {
-            return new JsonTimeSeriesDataService();
-        }
-    }
-
     /**
-     * MapTSDB时序数据服务（条件化Bean）
+     * MapTSDB时序数据服务
      */
     @Bean
+    @Primary
     @ConditionalOnProperty(name = "gridinsight.timeseries.type", havingValue = "maptsdb")
-    public MapTsdbTimeSeriesDataService mapTsdbTimeSeriesDataService() {
+    public TimeSeriesDataService mapTsdbTimeSeriesDataService() {
+        System.out.println("TimeSeriesDataConfig: 创建MapTsdbTimeSeriesDataService");
         return new MapTsdbTimeSeriesDataService();
     }
 
     /**
-     * JSON文件时序数据服务（条件化Bean）
+     * JSON文件时序数据服务
      */
     @Bean
-    @ConditionalOnProperty(name = "gridinsight.timeseries.type", havingValue = "json")
-    public JsonTimeSeriesDataService jsonTimeSeriesDataService() {
+    @Primary
+    @ConditionalOnProperty(name = "gridinsight.timeseries.type", havingValue = "json", matchIfMissing = true)
+    public TimeSeriesDataService jsonTimeSeriesDataService() {
+        System.out.println("TimeSeriesDataConfig: 创建JsonTimeSeriesDataService");
         return new JsonTimeSeriesDataService();
     }
 }

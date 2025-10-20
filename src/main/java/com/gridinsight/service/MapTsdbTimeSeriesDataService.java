@@ -43,16 +43,26 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
     @PostConstruct
     public void init() {
         try {
-            // 初始化MapTSDB
-            // 根据QuickStartExample学习正确的初始化方式
-            tsdb = TimeSeriesDatabaseBuilder.builder()
-                    .path(dataPath + "/maptsdb.db")  // 设置数据库文件路径
-                    .addDoubleSource("metrics", "指标数据")  // 添加指标数据源
-                    .withRetentionDays(30)  // 数据保留30天
-                    .enableMemoryMapping()  // 启用内存映射
-                    .buildWithDynamicSources();  // 构建支持动态数据源的数据库
+            String dbFilePath = dataPath + "/maptsdb.db";
+            java.io.File dbFile = new java.io.File(dbFilePath);
             
-            System.out.println("MapTSDB时序数据库初始化成功，数据路径: " + dataPath);
+            if (dbFile.exists()) {
+                // 数据库文件已存在，打开现有数据库
+                System.out.println("发现现有MapTSDB数据库文件，正在打开: " + dbFilePath);
+                tsdb = TimeSeriesDatabaseBuilder.openExistingWithDynamicSources(dbFilePath);
+                System.out.println("MapTSDB现有数据库打开成功，数据路径: " + dataPath);
+            } else {
+                // 数据库文件不存在，创建新数据库
+                System.out.println("创建新的MapTSDB数据库: " + dbFilePath);
+                tsdb = TimeSeriesDatabaseBuilder.builder()
+                        .path(dbFilePath)  // 设置数据库文件路径
+                        .addDoubleSource("metrics", "指标数据")  // 添加指标数据源
+                        .withRetentionDays(30)  // 数据保留30天
+                        .enableMemoryMapping()  // 启用内存映射
+                        .enableTransactions()  // 启用事务
+                        .buildWithDynamicSources();  // 构建支持动态数据源的数据库
+                System.out.println("MapTSDB新数据库创建成功，数据路径: " + dataPath);
+            }
             
         } catch (Exception e) {
             System.err.println("MapTSDB初始化失败: " + e.getMessage());
@@ -140,6 +150,12 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
         }
 
         try {
+            // 确保数据源存在，如果不存在则添加
+            if (!tsdb.getDataSourceIds().contains(metricIdentifier)) {
+                System.out.println("为指标添加数据源: " + metricIdentifier);
+                tsdb.addDoubleSource(metricIdentifier, "指标数据");
+            }
+            
             // 将LocalDateTime转换为时间戳（毫秒）
             long timestampMillis = timestamp.toInstant(ZoneOffset.UTC).toEpochMilli();
             
@@ -183,6 +199,12 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
                 MetricValue value = entry.getValue();
                 
                 if (value != null && value.getValue() != null) {
+                    // 确保数据源存在，如果不存在则添加
+                    if (!tsdb.getDataSourceIds().contains(metricIdentifier)) {
+                        System.out.println("为指标添加数据源: " + metricIdentifier);
+                        tsdb.addDoubleSource(metricIdentifier, "指标数据");
+                    }
+                    
                     // 使用putDouble方法存储float值
                     tsdb.putDouble(metricIdentifier, timestampMillis, value.getValue());
                     
@@ -214,14 +236,28 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
             }
 
             // 从数据库获取最新值
-            // 注意：MapTSDB没有getLatestValue方法，需要实现获取最新值的逻辑
-            // 暂时从缓存获取，实际实现需要遍历数据或维护最新值索引
-            if (enableCache && latestValueCache.containsKey(metricIdentifier)) {
-                return latestValueCache.get(metricIdentifier);
-            }
+            // 使用时间范围查询获取最近的数据
+            long currentTime = System.currentTimeMillis();
+            long startTime = currentTime - 24 * 60 * 60 * 1000; // 查询最近24小时的数据
             
-            // TODO: 实现真正的获取最新值逻辑
-            // 可能需要：1. 维护最新值索引 2. 遍历数据获取最新值 3. 使用时间范围查询
+            java.util.NavigableMap<Long, Double> data = tsdb.queryRangeDouble(metricIdentifier, startTime, currentTime);
+            if (!data.isEmpty()) {
+                java.util.Map.Entry<Long, Double> latestEntry = data.lastEntry();
+                Double value = latestEntry.getValue();
+                LocalDateTime timestamp = LocalDateTime.ofInstant(
+                    java.time.Instant.ofEpochMilli(latestEntry.getKey()), 
+                    ZoneOffset.UTC
+                );
+                
+                MetricValue metricValue = new MetricValue(metricIdentifier, value, "个", timestamp, MetricValue.DataQuality.GOOD);
+                
+                // 更新缓存
+                if (enableCache) {
+                    latestValueCache.put(metricIdentifier, metricValue);
+                }
+                
+                return metricValue;
+            }
             
             return null;
             
@@ -241,16 +277,20 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
             long startMillis = startTime.toInstant(ZoneOffset.UTC).toEpochMilli();
             long endMillis = endTime.toInstant(ZoneOffset.UTC).toEpochMilli();
             
-            // 从MapTSDB查询时间范围内的数据
-            // 注意：MapTSDB没有直接的getRange方法，需要实现时间范围查询逻辑
+            // 使用时间范围查询获取历史数据
+            java.util.NavigableMap<Long, Double> data = tsdb.queryRangeDouble(metricIdentifier, startMillis, endMillis);
+            
             List<MetricValue> result = new ArrayList<>();
-            
-            // TODO: 实现真正的历史数据查询
-            // 方案1: 使用批量查询，遍历时间范围内的所有可能时间戳
-            // 方案2: 维护时间索引，快速定位数据
-            // 方案3: 使用MapTSDB的时间范围查询API（如果存在）
-            
-            // 临时实现：返回空列表，等待实现真正的查询逻辑
+            for (java.util.Map.Entry<Long, Double> entry : data.entrySet()) {
+                Double value = entry.getValue();
+                LocalDateTime timestamp = LocalDateTime.ofInstant(
+                    java.time.Instant.ofEpochMilli(entry.getKey()), 
+                    ZoneOffset.UTC
+                );
+                
+                MetricValue metricValue = new MetricValue(metricIdentifier, value, "个", timestamp, MetricValue.DataQuality.GOOD);
+                result.add(metricValue);
+            }
             
             return result;
             
@@ -304,6 +344,7 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
         try {
             // 获取存储统计信息
             stats.put("storageType", "MapTSDB");
+            stats.put("implementation", "MapTsdbTimeSeriesDataService");
             stats.put("dataPath", dataPath);
             stats.put("cacheEnabled", enableCache);
             stats.put("cacheSize", latestValueCache.size());

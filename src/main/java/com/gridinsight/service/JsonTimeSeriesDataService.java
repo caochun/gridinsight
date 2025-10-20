@@ -474,6 +474,8 @@ public class JsonTimeSeriesDataService implements TimeSeriesDataService {
         try {
             lock.readLock().lock();
             
+            stats.put("storageType", "JSON");
+            stats.put("implementation", "JsonTimeSeriesDataService");
             stats.put("totalMetrics", metricHistory.size());
             stats.put("cachedValues", latestValues.size());
             stats.put("dataPath", dataPath);

@@ -60,6 +60,20 @@
             <version>1.0.0</version>
         </dependency>
         
+        <!-- Kotlin 标准库 - 确保版本兼容性 -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>1.8.22</version>
+        </dependency>
+        
+        <!-- Kotlin 反射库 -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <version>1.8.22</version>
+        </dependency>
+        
         <!-- Spring Boot JDBC Starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
