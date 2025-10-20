@@ -62,3 +62,4 @@ public class MetricEventPublisher {
         publishMetricValueChanged(event);
     }
 }
+
