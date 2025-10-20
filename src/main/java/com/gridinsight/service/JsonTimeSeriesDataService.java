@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * 提供高性能的本地时序数据存储和查询
  */
 @Service
-public class JsonTimeSeriesDataService {
+public class JsonTimeSeriesDataService implements TimeSeriesDataService {
 
     @Value("${gridinsight.timeseries.data-path:data/timeseries}")
     private String dataPath;
