@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * 使用高性能的MapDB时序数据库存储指标历史数据
  * 所有指标值都作为float类型存储，不包含quality属性
  */
-@Service
 public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
 
     @Value("${gridinsight.timeseries.data-path:data/timeseries}")
