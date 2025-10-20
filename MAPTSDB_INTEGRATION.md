@@ -124,6 +124,53 @@ mapTsdbTimeSeriesDataService.commitAll();
 - **批量写入优化**: 大数据量时性能提升2.89倍
 - **并发性能**: 8线程处理80万数据点，零数据丢失
 
+## MapTSDB API 学习总结
+
+基于[QuickStartExample](https://github.com/caochun/maptsdb/blob/main/src/main/java/com/maptsdb/QuickStartExample.java)的学习：
+
+### 🏗️ **数据库初始化**
+```java
+TimeSeriesDatabase db = TimeSeriesDatabaseBuilder.builder()
+    .path("example.db")                    // 设置数据库文件路径
+    .addDoubleSource("metrics", "指标数据")  // 添加数据源
+    .withRetentionDays(30)                 // 设置数据保留天数
+    .enableMemoryMapping()                 // 启用内存映射
+    .buildWithDynamicSources();            // 构建支持动态数据源的数据库
+```
+
+### 📝 **数据写入**
+```java
+// 单条写入
+db.putDouble("temperature", timestamp, 25.6);
+db.putInteger("humidity", timestamp, 65);
+db.putObject("status", timestamp, "正常");
+
+// 批量写入（高性能）
+db.putBatchDouble("temperature", tempData);
+db.putBatchInteger("humidity", humidityData);
+db.putBatchObject("status", statusData);
+
+// 重要：手动提交事务（提升性能的关键）
+db.commit();
+```
+
+### 🔍 **数据查询**
+```java
+// 单点查询
+Double temp = db.getDouble("temperature", timestamp);
+Integer humidity = db.getInteger("humidity", timestamp);
+String status = (String) db.getObject("status", timestamp);
+
+// 获取数据源信息
+DataSourceConfig config = db.getDataSourceInfo("temperature");
+```
+
+### 📊 **性能特点**
+- **单条写入**: 400,000 条/秒 (数值类型)
+- **批量写入**: 312,500 条/秒 (数值类型)  
+- **读取性能**: 833,333 条/秒 (数值类型)
+- **并发写入**: 131,148 条/秒 (零数据丢失)
+
 ## 使用示例
 
 ### 基本使用
@@ -142,6 +189,10 @@ MetricValue latestValue = timeSeriesDataService.getLatestMetricValue(identifier)
 // 获取历史数据
 List<MetricValue> history = timeSeriesDataService.getMetricHistory(
     identifier, startTime, endTime);
+
+// 获取指定时间戳的数据
+MetricValue valueAtTime = mapTsdbTimeSeriesDataService.getMetricValueAtTimestamp(
+    identifier, timestamp);
 ```
 
 ### 批量操作

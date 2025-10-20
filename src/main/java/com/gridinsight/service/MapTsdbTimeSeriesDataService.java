@@ -4,6 +4,7 @@ import com.gridinsight.domain.model.MetricValue;
 import com.maptsdb.TimeSeriesDatabase;
 import com.maptsdb.TimeSeriesDatabaseBuilder;
 import com.maptsdb.DataPoint;
+import com.maptsdb.DataSourceConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -44,11 +45,13 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
     public void init() {
         try {
             // 初始化MapTSDB
-            // 注意：根据MapTSDB的实际API调整初始化方式
+            // 根据QuickStartExample学习正确的初始化方式
             tsdb = TimeSeriesDatabaseBuilder.builder()
-                    .enableMemoryMapping()
-                    .enableTransactions()
-                    .build();
+                    .path(dataPath + "/maptsdb.db")  // 设置数据库文件路径
+                    .addDoubleSource("metrics", "指标数据")  // 添加指标数据源
+                    .withRetentionDays(30)  // 数据保留30天
+                    .enableMemoryMapping()  // 启用内存映射
+                    .buildWithDynamicSources();  // 构建支持动态数据源的数据库
             
             System.out.println("MapTSDB时序数据库初始化成功，数据路径: " + dataPath);
             
@@ -86,6 +89,49 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
         } catch (Exception e) {
             System.err.println("提交数据时发生错误: " + e.getMessage());
         }
+    }
+    
+    /**
+     * 获取数据源信息
+     * @param metricIdentifier 指标标识符
+     * @return 数据源配置信息
+     */
+    public DataSourceConfig getDataSourceInfo(String metricIdentifier) {
+        try {
+            if (tsdb != null) {
+                return tsdb.getDataSourceInfo(metricIdentifier);
+            }
+        } catch (Exception e) {
+            System.err.println("获取数据源信息时发生错误: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * 根据时间戳获取特定数据点的值
+     * @param metricIdentifier 指标标识符
+     * @param timestamp 时间戳
+     * @return 指标值
+     */
+    public MetricValue getMetricValueAtTimestamp(String metricIdentifier, LocalDateTime timestamp) {
+        try {
+            if (tsdb != null && timestamp != null) {
+                long timestampMillis = timestamp.toInstant(ZoneOffset.UTC).toEpochMilli();
+                Double value = tsdb.getDouble(metricIdentifier, timestampMillis);
+                
+                if (value != null) {
+                    return new MetricValue(
+                        metricIdentifier,
+                        value,
+                        "个", // 单位需要从指标定义中获取
+                        timestamp
+                    );
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("获取指定时间戳的指标值时发生错误: " + e.getMessage());
+        }
+        return null;
     }
 
     @Override
@@ -169,14 +215,14 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
             }
 
             // 从数据库获取最新值
-            // 注意：这里需要根据MapTSDB的实际API调整
-            // 暂时返回null，等待MapTSDB API确认
-            // Object latestValue = tsdb.getLatestValue(metricIdentifier);
-            
-            // 临时实现：从缓存获取
+            // 注意：MapTSDB没有getLatestValue方法，需要实现获取最新值的逻辑
+            // 暂时从缓存获取，实际实现需要遍历数据或维护最新值索引
             if (enableCache && latestValueCache.containsKey(metricIdentifier)) {
                 return latestValueCache.get(metricIdentifier);
             }
+            
+            // TODO: 实现真正的获取最新值逻辑
+            // 可能需要：1. 维护最新值索引 2. 遍历数据获取最新值 3. 使用时间范围查询
             
             return null;
             
@@ -197,13 +243,15 @@ public class MapTsdbTimeSeriesDataService implements TimeSeriesDataService {
             long endMillis = endTime.toInstant(ZoneOffset.UTC).toEpochMilli();
             
             // 从MapTSDB查询时间范围内的数据
-            // 注意：这里需要根据MapTSDB的实际API调整
-            // 暂时返回空列表，等待MapTSDB API确认
-            // List<DataPoint<Object>> dataPoints = tsdb.getRange(metricIdentifier, startMillis, endMillis);
-            
+            // 注意：MapTSDB没有直接的getRange方法，需要实现时间范围查询逻辑
             List<MetricValue> result = new ArrayList<>();
-            // 临时实现：返回空列表
+            
             // TODO: 实现真正的历史数据查询
+            // 方案1: 使用批量查询，遍历时间范围内的所有可能时间戳
+            // 方案2: 维护时间索引，快速定位数据
+            // 方案3: 使用MapTSDB的时间范围查询API（如果存在）
+            
+            // 临时实现：返回空列表，等待实现真正的查询逻辑
             
             return result;
             
